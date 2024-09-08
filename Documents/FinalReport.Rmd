@@ -1,0 +1,2414 @@
+---
+title: "Modeling Climate Change"
+author: "Jared Boone, Noah Kantor, Isack Walube, Ben Gaskill"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Overview}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+<style>
+.justify {
+  text-align: justify;
+}
+</style>
+
+<div class="justify">
+<br/>
+<span style="color: #FF69B4;">Introduction (IW, BG, JB, NK)</span> 
+<br/>
+Our project analyzes climate data in R. We utilized the rGEE package to obtain data from the Google Earth Engine image collection "NASA/NEX-DCP30". We began by writing a script to connect to the Earth Engine servers, and saved each downloaded file as a SpatRaster object. The image collection consists of mass flux per second precipitation, mean daily minimum temperature, and mean daily maximum temperature. Monthly data from 2018-2023, 2050, and 2098 was used by Noah to create a climate classification product. The same temporal resolution was utilized by Ben to calculate Potential Evapotranspiration and generate graphs of the Palmer Drought Severity Index by region. Using the 2018-2023 full-resolution imagery, Isack was able to pinpoint areas exhibiting extreme temperatures, both high and low, thereby identifying hotspots. Yearly data from 2018-2023 was used by Jared to calculate total and mean precipitation by region as well as the area of land per region that experienced rainfall totals greater than the mean precipitation.
+</div>
+
+<span style="color: #FF69B4;">Primary Objectives (IW, BG, JB, NK)</span> 
+<br/>
+1. Identify Hotspots of Extreme Temperature (Isack)  <br/>
+2. Calculate Potential Evapotranspiration and Palmer Drought Severity Index by region (Ben) <br/>
+3. Track changes in rainfall totals over 5 year increments (Jared) <br/>
+4. Utilize climate thresholds to classify climate types (Noah) <br/>
+
+## Approach and Method
+<span style="color: #FF69B4;">Data (IW, BG, JB, NK)</span> 
+<style>
+.justify {
+  text-align: justify;
+}
+</style>
+
+<div class="justify">
+<br/>
+The datasets consist of rasters from the NASA Earth Exchange (NEX) Downscaled Climate Projections (NEX-DCP30) collection obtained from Google Earth Engine, which have three different bands containing variables of interest. This collection contains climate data from the continental United States and some projected climate data for future climate change scenarios. The first variable, “pr", consists of the mass flux per second of precipitation at surface; it includes both liquid and solid phases from all types of clouds (both large-scale and convective) and is in units of kilogram/meters^2^/second. The second variable is “tasmin”, which is the monthly mean of the daily-minimum near surface air temperature in units of Kelvin. The third variable is “tasmax”, which is the monthly mean of the daily-minimum near surface air temperature in units of Kelvin.</div>
+
+<span style="color: #FF69B4;">Preprocessing (BG)</span> 
+<br/>
+Please see the "Overview.Rmd" for the code and detailed description of obtaining imagery from Google Earth Engine
+We adapted similar preprocessing techniques on the data. We all converted <span style="color: #FF69B4;">tasmin</span> and <span style="color: #FF69B4;">tasmax</span> to units of Celsius. Precipitation was converted to either mm per day (Noah, Jared, Isack) or mm per month (Ben), based on the requirements of the analysis.
+<style>
+.justify {
+  text-align: justify;
+}
+</style>
+
+<div class="justify">
+### Noah Kantor Methods
+For my individual analysis, I classified pixels in a raster encompassing the entire United States using the Koppen Climate Classification. The Koppen Climate Classification is a mathematical algorithm that was developed by German scientist Wladimir Koppen in the early 20th century. The Koppen climate classification system is still widely used today to produce climate classification maps. This climate classification system uses monthly temperature and precipitation data for a year to classify a location as one of 5 main climate types, with numerous subtypes. For my analysis I only considered the 5 main categories, which are: A: tropical, B: arid, C: temperate, D: continental, and E: polar. The main component of my analysis consisted of a series of conditional statements used to classify each pixel as one of those 5 climate types based on temperature and precipitation conditions. The raw data that I used for my analysis was a set of 12 rasters, each one representing one month in a year. The rasters contained 3 bands, one band for precipitation with units kilogram/meters^2^/second, another band for the monthly mean of the daily minimum temperature with units Kelvin, and a third band for the monthly mean of the daily maximum temperature with units Kelvin. Because of the units in the original data, I needed to pre-process the data so that the units matched the units specified by the Koppen algorithm. I needed to convert the precipitation to millimeters per month and the temperature to Celsius. The temperature conversion to Celsius was relatively straightforward, the formula used was T~Kelvin~ - 273.15 = T~Celsius~. The formula to convert kilogram/meters^2^/second to millimeters/month was more complex, the formula I used was precipitation~kg/meters^2^/second~ * 86659.9794 * number of days in the month = precipitation~mm/month~. The constant 86659.9794 used in the formula was derived from the number of seconds in a day, the density of water, and the number of millimeters in a meter. Since the number of days in a month varies from month to month, I needed to perform this conversion separately for each month, changing the number of days multiplied accordingly. Another necessary pre-processing step was converting the tif files to Terra spat rasters. Another band that I needed to add to each raster to complete my analysis was an average temperature band which was the monthly average temperature. I calculated this by adding the min and max temperature bands and then dividing by two. For the algorithm to work, I also needed to create precipitation rasters for just the summer months (April-September) and winter months (October-March). I created these by summing the values in multiple rasters into one raster. It was also necessary to save the rasters that had the warmest and coldest average temperatures as separate warmestmonth and coldestmonth objects. To accomplish this I sorted all of the months by the value of the average temperature band using the values function to export the average temperature values of the rasters to a dataframe and then sorting and slicing the dataframe using dplyr methods. There were two more intermediate processing steps that had to be completed, one was creating a raster containing the average temperature data for the whole year, to do this I took the mean of the average temperature column for all months. Total precipitation for the whole year was also needed, I accomplished this by creating a raster that contained the sum of precipitation for all months. For my analysis I used the conditional statements specified in the Koppen algorithm, as detailed in my code, looping through every pixel in the raster and applying the conditional statements one pixel at a time. The end result was a categorical raster where each pixel was assigned a value 0-4 corresponding to each climate category. I performed this analysis for the years 2018-2023, running the analysis separately for each year. I also ran the analysis on data sets for 2050 and 2098 that were based on predictions from climate models to get a sense of how climate conditions will change in the future. The only changes that I made when running the analysis for different years were changing the file paths when loading in the data and changing the number of days for the February unit conversion function when the year being analyszed was a leap year. </div>
+
+Source for Koppen classification algorithm:
+https://www.britannica.com/science/Koppen-climate-classification
+
+
+### Noah Kantor Results
+<span style="color: #FF69B4;">Noah's Climate Classification Code (NK)</span> 
+<br/>
+```{r, eval = FALSE}
+#load in list of 12 different rasters, each representing 1 month, 
+#give it name rasterlist
+library(terra)
+library(dplyr)
+library(ggplot2)
+
+print("load in rasters")
+s1 <- rast(here::here("2098monthlyrasters/January.tif"))
+s2 <- rast(here::here("2098monthlyrasters/February.tif"))
+s3 <- rast(here::here("2098monthlyrasters/March.tif"))
+s4 <- rast(here::here("2098monthlyrasters/April.tif"))
+s5 <- rast(here::here("2098monthlyrasters/May.tif"))
+s6 <- rast(here::here("2098monthlyrasters/June.tif"))
+s7 <- rast(here::here("2098monthlyrasters/July.tif"))
+s8 <- rast(here::here("2098monthlyrasters/August.tif"))
+s9 <- rast(here::here("2098monthlyrasters/September.tif"))
+s10 <- rast(here::here("2098monthlyrasters/October.tif"))
+s11 <- rast(here::here("2098monthlyrasters/November.tif"))
+s12 <- rast(here::here("2098monthlyrasters/December.tif"))
+print("rasters finished loading")
+
+print("unit conversion function definitions")
+convertJanuary <- function(x){
+  band1 <- x[[1]] * 86659.9794 * 31
+  band2 <- x[[2]] - 273.15
+  band3 <- x[[3]] - 273.15
+  return(c(band1, band2, band3))
+}
+
+convertFebruary <- function(x){
+  band1 <- x[[1]] * 86659.9794 * 28
+  band2 <- x[[2]] - 273.15
+  band3 <- x[[3]] - 273.15
+  return(c(band1, band2, band3))
+}
+
+convertMarch <- function(x){
+  band1 <- x[[1]] * 86659.9794 * 31
+  band2 <- x[[2]] - 273.15
+  band3 <- x[[3]] - 273.15
+  return(c(band1, band2, band3))
+}
+
+convertApril <- function(x){
+  band1 <- x[[1]] * 86659.9794 * 30
+  band2 <- x[[2]] - 273.15
+  band3 <- x[[3]] - 273.15
+  return(c(band1, band2, band3))
+}
+
+convertMay <- function(x){
+  band1 <- x[[1]] * 86659.9794 * 31
+  band2 <- x[[2]] - 273.15
+  band3 <- x[[3]] - 273.15
+  return(c(band1, band2, band3))
+}
+
+convertJune <- function(x){
+  band1 <- x[[1]] * 86659.9794 * 30
+  band2 <- x[[2]] - 273.15
+  band3 <- x[[3]] - 273.15
+  return(c(band1, band2, band3))
+}
+
+convertJuly <- function(x){
+  band1 <- x[[1]] * 86659.9794 * 31
+  band2 <- x[[2]] - 273.15
+  band3 <- x[[3]] - 273.15
+  return(c(band1, band2, band3))
+}
+
+convertAugust <- function(x){
+  band1 <- x[[1]] * 86659.9794 * 31
+  band2 <- x[[2]] - 273.15
+  band3 <- x[[3]] - 273.15
+  return(c(band1, band2, band3))
+}
+
+convertSeptember <- function(x){
+  band1 <- x[[1]] * 86659.9794 * 30
+  band2 <- x[[2]] - 273.15
+  band3 <- x[[3]] - 273.15
+  return(c(band1, band2, band3))
+}
+
+convertOctober <- function(x){
+  band1 <- x[[1]] * 86659.9794 * 31
+  band2 <- x[[2]] - 273.15
+  band3 <- x[[3]] - 273.15
+  return(c(band1, band2, band3))
+}
+
+convertNovember <- function(x){
+  band1 <- x[[1]] * 86659.9794 * 30
+  band2 <- x[[2]] - 273.15
+  band3 <- x[[3]] - 273.15
+  return(c(band1, band2, band3))
+}
+
+convertDecember <- function(x){
+  band1 <- x[[1]] * 86659.9794 * 31
+  band2 <- x[[2]] - 273.15
+  band3 <- x[[3]] - 273.15
+  return(c(band1, band2, band3))
+}
+print("unit conversion definitions finished")
+
+print("starting unit conversion process")
+s1 <- convertJanuary(s1)
+print("finished converting January")
+s2 <- convertFebruary(s2)
+s3 <- convertMarch(s3)
+s4 <- convertApril(s4)
+s5 <- convertMay(s5)
+s6 <- convertJune(s6)
+s7 <- convertJuly(s7)
+s8 <- convertAugust(s8)
+s9 <- convertSeptember(s9)
+s10 <- convertOctober(s10)
+s11 <- convertNovember(s11)
+s12 <- convertDecember(s12)
+print("finished unit conversion process")
+
+rasterlist <- list(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12)
+print(rasterlist)
+
+print("starting to plot rasters")
+for (raster in rasterlist) {
+  plot(raster)
+}
+print("just finished plotting rasters")
+
+#band 1 is precipitation, band 2 is min temperature, band 3 is max temperature
+#add another band to the original raster called avgtemp, 
+#this band is the result of adding the Mintemp and Maxtemp bands, 
+#then dividing that value by 2 to get the mean
+updatedrasterlist <- list(1:12)
+indexnumber <- 1
+print("Started running avgtemp loop")
+for (raster in rasterlist) {
+  avgtemp <- (raster[[2]] + raster[[3]]) / 2
+  updatedrasterlist[[indexnumber]] <- c(raster[[1]], raster[[2]], raster[[3]], 
+                                        avgtemp)
+  indexnumber <- indexnumber + 1
+}
+print("finished running avgtemp loop")
+rasterlist <- updatedrasterlist
+
+print("starting to plot rasters with avgtemp band")
+for (raster in rasterlist) {
+  plot(raster)
+}
+print("just finished plotting rasters with avgtemp band")
+
+print("now creating summerprecipitation")
+summerprecipitation <- rasterlist[[4]][[1]] + rasterlist[[5]][[1]] 
++ rasterlist[[6]][[1]] + rasterlist[[7]][[1]] + rasterlist[[8]][[1]] 
++ rasterlist[[9]][[1]]
+print("now creating winterprecipitation")
+winterprecipitation <- rasterlist[[10]][[1]] + rasterlist[[11]][[1]] 
++ rasterlist[[12]][[1]] + rasterlist[[1]][[1]] + rasterlist[[2]][[1]] 
++ rasterlist[[3]][[1]]
+
+#code to compute mean values and save them to a dataframe
+print("now creating avgtempmeanlist")
+avgtempmeanlist <- c(1:12)
+rownumber <- 1
+for (raster in rasterlist) {
+  v <- values(raster[[4]])
+  avgtempmean <- mean(v, na.rm = TRUE)
+  avgtempmeanlist[[rownumber]] <- avgtempmean
+  rownumber <- rownumber + 1
+}
+print("now creating avgtempmeandataframe")
+avgtempmeandataframe <- data.frame(avgtempmean = avgtempmeanlist) %>% 
+  mutate(rownumber = c(1:12))
+print("now creating avgtempmeandataframesorted")
+avgtempmeandataframesorted <- avgtempmeandataframe %>% arrange(avgtempmean)
+#select raster where the mean value of the avgtemp raster is lower than the mean 
+#value of any of the others, save this raster as coldestmonth
+print("now creating coldestmonth")
+coldestmonth <- avgtempmeandataframesorted %>% slice(1) %>% .[,2] %>% 
+  rasterlist[[.]] 
+print(coldestmonth)
+print("now plotting coldestmonth")
+plot(coldestmonth)
+#select raster where the mean value of the avgtemp raster is higher than the 
+#mean value of any of the others, save this raster as warmestmonth
+print("now creating warmestmonth")
+warmestmonth <- avgtempmeandataframesorted %>% slice(12) %>% .[,2] %>% 
+  rasterlist[[.]]
+print("now plotting warmestmonth")
+plot(warmestmonth)
+
+#create new raster that is average temp for the whole year
+#raster is the result of taking the mean of the temperature bands of all rasters
+print("now creating yearlyaveragetempraster")
+yearlyaveragetempraster <- mean(rasterlist[[1]][[4]], rasterlist[[2]][[4]], 
+                                rasterlist[[3]][[4]], rasterlist[[4]][[4]], 
+                                rasterlist[[5]][[4]], rasterlist[[6]][[4]], 
+                                rasterlist[[7]][[4]], rasterlist[[8]][[4]], 
+                                rasterlist[[9]][[4]], rasterlist[[10]][[4]],
+                                rasterlist[[11]][[4]], rasterlist[[12]][[4]])
+print("now plotting yearlyaveragetempraster")
+plot(yearlyaveragetempraster)
+
+#create new raster that is average precip for the whole year
+#raster is the result of taking the mean of precipitation bands of all rasters
+print("now creating yearlyprecipraster")
+yearlyprecipraster <- (rasterlist[[1]][[1]] + rasterlist[[2]][[1]] + 
+                       rasterlist[[3]][[1]] + rasterlist[[4]][[1]] +
+                       rasterlist[[5]][[1]] + rasterlist[[6]][[1]] + 
+                       rasterlist[[7]][[1]] + rasterlist[[8]][[1]] + 
+                       rasterlist[[9]][[1]] + rasterlist[[10]][[1]] +
+                       rasterlist[[11]][[1]] + rasterlist[[12]][[1]])
+
+print("Now starting to create climate classification map")
+#function that loops through every pixel in the raster, 
+#creates a new raster with each pixel representing a climate code
+#1 represents climate type A, 2 represents climate type B, etc...
+climate_class_raster <- rast(rasterlist[[1]][[1]], 
+                             names = "climate_class_raster", vals = NA)
+for (cid in 1:ncell(rasterlist[[1]][[1]])){
+  print(cid)
+  #assigns code 0 if there is NA value
+  if (is.na(coldestmonth[[4]][cid]) == TRUE){
+    climate_class_raster[cid] <- 0
+    print("The value is NA")
+  } else{ 
+    #classification code
+    #conditional statements:
+    #Tests for A (tropical) climate
+    #if avg temperature for coldest month is > 18 then climate is A tropical
+    if (coldestmonth[[4]][cid] >= 18){
+      climate_class_raster[cid] <- 1
+      print("climate type 1")
+    }
+    #Tests for B (arid) climate:
+    # if summerprecip / yearlyprecip > 0.7 and r < 20t + 280
+    # climate type is B
+    # else if winterprecip / yearlyprecip > 0.7 and r < 20t
+    # climate type is B
+    # else if summerprecip / yearlyprecip < 0.7 and 
+    #winterprecip / yearlyprecip < 0.7 and r < 20t + 140
+    # climate type is B
+    #else check next climate type
+    
+    if ((summerprecipitation[cid] / yearlyprecipraster[cid]) > 0.7 & 
+        yearlyprecipraster[cid] < ((20 * yearlyaveragetempraster[cid]) + 280)){
+      print("climate type 2")
+      climate_class_raster[cid] <- 2
+    } else if ((winterprecipitation[cid] / yearlyprecipraster[cid]) > 0.7 & 
+               yearlyprecipraster[cid] < (20 * yearlyaveragetempraster[cid])){
+      print("climate type 2")
+      climate_class_raster[cid] <- 2
+    } else if ((summerprecipitation[cid] / yearlyprecipraster[cid]) < 0.7 & 
+               (winterprecipitation[cid] / yearlyprecipraster[cid]) < 0.7 & 
+               yearlyprecipraster[cid] < ((20 * yearlyaveragetempraster[cid]) 
+                                          + 140)){
+      print("climate type 2")
+      climate_class_raster[cid] <- 2
+    } else {
+    
+    #Tests for C (temperate) climate
+    #if avg temperature of warmest month >= 10 
+    #and avg temperature of coldest month is < 18 and > -3, 
+    #then climate is C temperate
+    if (warmestmonth[[4]][cid] >= 10 & 18 > coldestmonth[[4]][cid] & 
+        coldestmonth[[4]][cid] > -3){
+      climate_class_raster[cid] <- 3
+      print("climate type 3")
+    }
+    
+    #Tests for D (continental) climate
+    #if avg temperature of warmest month is >= 10 
+    #and avg temperature of coldest month is =< -3, 
+    #then climate is D continental
+    if (warmestmonth[[4]][cid] >=10 & coldestmonth[[4]][cid] <= -3) {
+      climate_class_raster[cid] <- 4
+      print("climate type 4")
+    }
+    #Tests for E (polar) climate
+    #if avg temperature of warmest month is < 10
+    if (warmestmonth[[4]][cid] < 10) {
+      climate_class_raster[cid] <- 5
+      print("climate type 5")
+    }
+    }
+  }
+}
+print("now plotting climate_class_raster")
+plot(climate_class_raster)
+ClimateClass2098 <- climate_class_raster
+writeRaster(ClimateClass2098, filename = 
+              file.path("~/geog346/rgeeclimatemodeling/ClimateClassRasters", 
+                        "ClimateClass2098.tif"))
+```
+<span style="color: #FF69B4;">Noah's Climate Classification Code (NK)</span> 
+<br/>
+```{r, fig.width=6, fig.height=5}
+library(terra)
+#fancy plotting code
+
+#load in 2098 raster and plot it
+climate_class_raster <- 
+  rast(here::here("ClimateClassRasters/ClimateClass2098.tif"))
+cols = data.frame(id=0:4, 
+             col=c("white", "orange", "yellow", "limegreen", "darkgreen"))
+plot(climate_class_raster, type = "classes", 
+     main = "2098 Koppen Climate Classification", 
+     plg=list(legend=c("NA", "Tropical", "Arid", "Temperate", "Continental")), 
+     col = cols, mar=c(4,2,0.5,7))
+
+#load in 2050 raster and plot it
+climate_class_raster <- 
+  rast(here::here("ClimateClassRasters/ClimateClass2050.tif"))
+cols = data.frame(id=0:4, 
+             col=c("white", "orange", "yellow", "limegreen", "darkgreen"))
+plot(climate_class_raster, type = "classes", 
+     main = "2050 Koppen Climate Classification", 
+     plg=list(legend=c("NA", "Tropical", "Arid", "Temperate", "Continental")), 
+     col = cols, mar=c(4,2,0.5,7))
+ 
+#load in 2023 raster and plot it
+climate_class_raster <- 
+  rast(here::here("ClimateClassRasters/ClimateClass2023.tif"))
+cols = data.frame(id=0:4, 
+             col=c("white", "orange", "yellow", "limegreen", "darkgreen"))
+plot(climate_class_raster, type = "classes", 
+     main = "2023 Koppen Climate Classification", 
+     plg=list(legend=c("NA", "Tropical", "Arid", "Temperate", "Continental")), 
+     col = cols, mar=c(4,2,0.5,7))
+
+#load in 2022 raster and plot it
+climate_class_raster <- 
+  rast(here::here("ClimateClassRasters/ClimateClass2022.tif"))
+cols = data.frame(id=0:4, 
+                  col=c("white", "orange", "yellow", "limegreen", "darkgreen"))
+plot(climate_class_raster, type = "classes", 
+     main = "2022 Koppen Climate Classification", 
+     plg=list(legend=c("NA", "Tropical", "Arid", "Temperate", "Continental")), 
+     col = cols, mar=c(4,2,0.5,7))
+
+#load in 2021 raster and plot it
+climate_class_raster <- 
+  rast(here::here("ClimateClassRasters/ClimateClass2021.tif"))
+cols = data.frame(id=0:4, 
+                  col=c("white", "orange", "yellow", "limegreen", "darkgreen"))
+plot(climate_class_raster, type = "classes", 
+     main = "2021 Koppen Climate Classification", 
+     plg=list(legend=c("NA", "Tropical", "Arid", "Temperate", "Continental")), 
+     col = cols, mar=c(4,2,0.5,7))
+
+#load in 2020 raster and plot it
+climate_class_raster <- 
+  rast(here::here("ClimateClassRasters/ClimateClass2020.tif"))
+cols = data.frame(id=0:4, 
+                  col=c("white", "orange", "yellow", "limegreen", "darkgreen"))
+plot(climate_class_raster, type = "classes", 
+     main = "2020 Koppen Climate Classification", 
+     plg=list(legend=c("NA", "Tropical", "Arid", "Temperate", "Continental")), 
+     col = cols, mar=c(4,2,0.5,7))
+
+#load in 2019 raster and plot it
+climate_class_raster <- 
+  rast(here::here("ClimateClassRasters/ClimateClass2019.tif"))
+cols = data.frame(id=0:4, 
+                  col=c("white", "orange", "yellow", "limegreen", "darkgreen"))
+plot(climate_class_raster, type = "classes", 
+     main = "2019 Koppen Climate Classification", 
+     plg=list(legend=c("NA", "Tropical", "Arid", "Temperate", "Continental")), 
+     col = cols, mar=c(4,2,0.5,7))
+
+#load in 2018 raster and plot it
+climate_class_raster <- 
+  rast(here::here("ClimateClassRasters/ClimateClass2018.tif"))
+cols = data.frame(id=0:4, 
+                  col=c("white", "orange", "yellow", "limegreen", "darkgreen"))
+plot(climate_class_raster, type = "classes", 
+     main = "2018 Koppen Climate Classification", 
+     plg=list(legend=c("NA", "Tropical", "Arid", "Temperate", "Continental")), 
+     col = cols, mar=c(4,2,0.5,7))
+```
+
+### Ben Gaskill Methods
+**Contributions to RGEE script**:
+With the help of my teammates, I spent a significant amount of time working on the initial script to connect to Google Earth Engine and download the imagery. Since the script only worked on my computer, I downloaded and distributed the imagery as needed for each of us. Myself, Isack, and Jared utilized yearly 2018-2023 full-resolution imagery. I downloaded monthly data (1 file per month) for Noah’s analysis from 2018-2023 at low-resolution. Noah and I also utilized monthly low-resolution data from 2050 and 2098 for a future outlook in both of our analyses.
+
+#### Individual Analysis
+My individual analysis is separated into two scripts: **Drought_Analysis.R** and **Drought_Analysis_Plots.R**. The analysis utilizes all three available variables from the NASA dataset, including precipitation, tasmin, and tasmax. The initial goal was to generate rasters of drought risk, but the end product was switched to numerical analysis and final graph products based on my research of available R packages for Potential Evapotranspiration and the Palmer Drought Severity Index.
+
+**Drought_Analysis.R**<br/>
+I began by importing the necessary libraries, including terra, dplyr, sf, and ggplot2. Each yearly dataset from 2018-2023 was read in, and I created a function to convert each raster’s variables to the desired units. This involves a conversion of kg / m^2^ / sec to mm /  month for precipitation, and Kelvin to Celsius for temperature. I created a raster stack of each variable for visualization and initial comparison.
+
+Next, I brought in the US Regions shapefile, created by Jared, to calculate PET and PDSI for each region. I filtered and clipped the shapefile by region, including Northeast, Midwest, South, and West. A latitude value was required to approximate external radiation for PET, so I calculated the centroid of each region and converted it to coordinates to get the average latitude for each region. The SPEI package of R contains the Hargreaves function, a mathematical method to calculate PET using monthly mean maximum and minimum temperature, and the latitude. Before running this calculation, I first removed any NA values from the dataset for each region. The Hargreaves function was run on all years 2018-2023 to calculate PET by region.
+
+The final step was to calculate the Palmer Drought Severity Index, using the scPDSI library. It was removed from CRAN, but I found an archived version that generates a time-series object that can be plotted. In preparation for this calculation, I joined each yearly variable for precipitation and PET by region. The pdsi function accepts precipitation (mm / month), potential evapotranspiration, a start date, and self-calibration options. I ran calculations for PDSI by region beginning in 2017 since the values for the first year were way off. This is most likely since the algorithm’s prediction ability increases as the number of iterations increases. I selected 2017 since I planned to only include 2018 and above in any case. The PDSI was calculated for 2018-2023, 2018-2050, and 2018-2098 for each region, and the resulting objects were stored as .rds files for easy access without executing the entire script again (saved GB of memory).
+
+**Drought_Analysis_Plots.R**<br/>
+This file deals with creating summary plot collections. The goal was to make 3 summary plots for each date range, with 4 subplots of each region per output. Libraries utilized include terra, dplyr, sf, ggplot2, grid, gridExtra, cowplot, and zoo. I began by reading in all of the previous .rds objects, which allowed me to view the plots generated at the end of the Drought Analysis script. I first had to remove 2017 from all of the objects, and working with time-series objects proved difficult for me. I found a solution by converting the time series to a zoo object, which allowed for enhanced indexing of time-series objects. I converted these to dataframes for ease of use and general familiarity. After filtering the 2017 data, I created a date column to plot the time series in its original form. I added a dotted line at the origin to easily differentiate between wet (positive) and dry (negative) conditions of the index.
+
+These steps were repeated for each year and region until I had plots saved for each variable. Finally, I made 3 collections and utilized the grid.arrange function to combine the plots. I utilized the ggsave option to save each collection as a PNG to be easily read into the FinalReport.Rmd vignette.
+
+
+<span style="color: #FF69B4;">Ben's Potential Evapotranspiration Calculation and Palmer Drought Severity Index (BG)</span> 
+<br/>
+```{r, eval = FALSE}
+library(terra)
+library(dplyr)
+library(sf)
+library(ggplot2)
+
+# Read in each yearly dataset
+climate_rast18 <- rast(here::here("5_year_highRes/2018_hiRes.tif"))
+climate_rast19 <- rast(here::here("5_year_highRes/2019_hiRes.tif"))
+climate_rast20 <- rast(here::here("5_year_highRes/2020_hiRes.tif"))
+climate_rast21 <- rast(here::here("5_year_highRes/2021_hiRes.tif"))
+climate_rast22 <- rast(here::here("5_year_highRes/2022_hiRes.tif"))
+climate_rast23 <- rast(here::here("5_year_highRes/2023_hiRes.tif"))
+
+# Function to convert from kg/m2/sec to mm / month
+# Precip needs mm / month for the Palmer Drought Severity Index
+# (mm / year would be * 365)
+convert <- function(x) {
+  x$pr <- x$pr * 86659.9794 * 30
+  x$tasmin <- x$tasmin - 273.15
+  x$tasmax <- x$tasmax - 273.15
+  return(x)
+}
+
+climate_rast18_converted <- convert(climate_rast18)
+climate_rast19_converted <- convert(climate_rast19)
+climate_rast20_converted <- convert(climate_rast20)
+climate_rast21_converted <- convert(climate_rast21)
+climate_rast22_converted <- convert(climate_rast22)
+climate_rast23_converted <- convert(climate_rast23)
+
+# Create raster stack for precipitation
+precip_6year <- rast(list(climate_rast18_converted[[1]], 
+                          climate_rast19_converted[[1]], 
+                          climate_rast20_converted[[1]], 
+                          climate_rast21_converted[[1]],
+                          climate_rast22_converted[[1]], 
+                          climate_rast23_converted[[1]]))
+names(precip_6year) <- c("Precipitation 2018", "Precipitation 2019", 
+                         "Precipitation 2020", "Precipitation 2021",
+                         "Precipitation 2022", "Precipitation 2023")
+plot(precip_6year)
+
+# Create raster stack for minimum temperature
+min_temp_6year <- rast(list(climate_rast18_converted[[2]], 
+                            climate_rast19_converted[[2]], 
+                            climate_rast20_converted[[2]], 
+                            climate_rast21_converted[[2]],
+                            climate_rast22_converted[[2]], 
+                            climate_rast23_converted[[2]]))
+names(min_temp_6year) <- c("Minimum Temperature 2018", "Minimum Temperature 2019", 
+                           "Minimum Temperature 2020", "Minimum Temperature 2021",
+                           "Minimum Temperature 2022", "Minimum Temperature 2023")
+plot(min_temp_6year)
+
+# Create raster stack for maximum temperature
+max_temp_6year <- rast(list(climate_rast18_converted[[3]], 
+                            climate_rast19_converted[[3]], 
+                            climate_rast20_converted[[3]], 
+                            climate_rast21_converted[[3]],
+                            climate_rast22_converted[[3]], 
+                            climate_rast23_converted[[3]]))
+names(max_temp_6year) <- c("Maximum Temperature 2018", "Maximum Temperature 2019", 
+                           "Maximum Temperature 2020", "Maximum Temperature 2021",
+                           "Maximum Temperature 2022", "Maximum Temperature 2023")
+plot(max_temp_6year)
+
+# # Plot with ggplot 2 reverse the color schemes
+# ggplot(max_temp6year, direction =-1)
+
+# Demos subsetting based on temp value
+plot(max_temp_6year > 25)
+plot(min_temp_6year < -10)
+
+#-------------------------------------------------------------------------------
+#-------------------- Bring in Region Shapefiles and Get Avg Lat ---------------
+#-------------------------------------------------------------------------------
+
+# x is long, y is lat
+us_regions <- read_sf("states/States_shapefile.shp")
+northeast <- filter(us_regions, Region == "Northeast") %>% summarize 
+midwest <- filter(us_regions, Region == "Midwest") %>% summarize
+south <- filter(us_regions, Region == "South") %>% summarize
+west <- filter(us_regions, Region == "West") %>% summarize
+
+plot(st_geometry(northeast))
+plot(st_geometry(midwest))
+plot(st_geometry(south))
+plot(st_geometry(west))
+
+# Get the centroid to convert to average coordinates of each region
+centroid_northeast <- northeast %>%
+  st_centroid() %>%
+  st_coordinates() %>%
+  as.data.frame()
+
+centroid_midwest <- midwest %>%
+  st_centroid() %>%
+  st_coordinates() %>%
+  as.data.frame()
+
+centroid_south <- south %>%
+  st_centroid() %>%
+  st_coordinates() %>%
+  as.data.frame()
+
+centroid_west <- west %>% 
+  st_centroid() %>%
+  st_coordinates() %>%
+  as.data.frame()
+
+northeast_lat <- centroid_northeast$Y
+midwest_lat <- centroid_midwest$Y
+south_lat <- centroid_south$Y
+west_lat <- centroid_west$Y
+
+#-------------------------------------------------------------------------------
+#------------------ Clip Rasters for Each Year to Each Region ------------------
+#-------------------------------------------------------------------------------
+
+northeast_2018_rast <- crop(climate_rast18_converted, northeast,  mask = TRUE)
+midwest_2018_rast <- crop(climate_rast18_converted, midwest,  mask = TRUE)
+south_2018_rast <- crop(climate_rast18_converted, south,  mask = TRUE)
+west_2018_rast <- crop(climate_rast18_converted, west,  mask = TRUE)
+
+northeast_2019_rast <- crop(climate_rast19_converted, northeast,  mask = TRUE)
+midwest_2019_rast <- crop(climate_rast19_converted, midwest,  mask = TRUE)
+south_2019_rast <- crop(climate_rast19_converted, south,  mask = TRUE)
+west_2019_rast <- crop(climate_rast19_converted, west,  mask = TRUE)
+
+northeast_2020_rast <- crop(climate_rast20_converted, northeast,  mask = TRUE)
+midwest_2020_rast <- crop(climate_rast20_converted, midwest,  mask = TRUE)
+south_2020_rast <- crop(climate_rast20_converted, south,  mask = TRUE)
+west_2020_rast <- crop(climate_rast20_converted, west,  mask = TRUE)
+
+northeast_2021_rast <- crop(climate_rast21_converted, northeast,  mask = TRUE)
+midwest_2021_rast <- crop(climate_rast21_converted, midwest,  mask = TRUE)
+south_2021_rast <- crop(climate_rast21_converted, south,  mask = TRUE)
+west_2021_rast <- crop(climate_rast21_converted, west,  mask = TRUE)
+
+northeast_2022_rast <- crop(climate_rast22_converted, northeast,  mask = TRUE)
+midwest_2022_rast <- crop(climate_rast22_converted, midwest,  mask = TRUE)
+south_2022_rast <- crop(climate_rast22_converted, south,  mask = TRUE)
+west_2022_rast <- crop(climate_rast22_converted, west,  mask = TRUE)
+
+northeast_2023_rast <- crop(climate_rast23_converted, northeast,  mask = TRUE)
+midwest_2023_rast <- crop(climate_rast23_converted, midwest,  mask = TRUE)
+south_2023_rast <- crop(climate_rast23_converted, south,  mask = TRUE)
+west_2023_rast <- crop(climate_rast23_converted, west,  mask = TRUE)
+
+# # Test plot above rasters
+# plot(west_2023_rast, axes = FALSE)
+
+#-------------------------------------------------------------------------------
+#-------------------- Calculate Potential Evapotranspiration -------------------
+#-------------------------------------------------------------------------------
+
+# Calculate Potential Evapotranspiration
+library(SPEI)
+??hargreaves
+??SPEI
+options(max.print = 10)
+
+# 2018 Northeast: Remove any .na values from dataset
+precip18_northeast <- values(northeast_2018_rast[[1]])
+precip18_filtered_northeast <- precip18_northeast[!is.na(precip18_northeast)]
+
+tmin18_northeast <- values(northeast_2018_rast[[2]])
+tmin18_filtered_northeast <- tmin18_northeast[!is.na(tmin18_northeast)]
+
+tmax18_northeast <- values(northeast_2018_rast[[3]])
+tmax18_filtered_northeast <- tmax18_northeast[!is.na(tmax18_northeast)]
+
+# 2018 Midwest: Remove any .na values from dataset
+precip18_midwest <- values(midwest_2018_rast[[1]])
+precip18_filtered_midwest <- precip18_midwest[!is.na(precip18_midwest)]
+
+tmin18_midwest <- values(midwest_2018_rast[[2]])
+tmin18_filtered_midwest <- tmin18_midwest[!is.na(tmin18_midwest)]
+
+tmax18_midwest <- values(midwest_2018_rast[[3]])
+tmax18_filtered_midwest <- tmax18_midwest[!is.na(tmax18_midwest)]
+
+# 2018 South: Remove any .na values from dataset
+precip18_south <- values(south_2018_rast[[1]])
+precip18_filtered_south <- precip18_south[!is.na(precip18_south)]
+
+tmin18_south <- values(south_2018_rast[[2]])
+tmin18_filtered_south <- tmin18_south[!is.na(tmin18_south)]
+
+tmax18_south <- values(south_2018_rast[[3]])
+tmax18_filtered_south <- tmax18_south[!is.na(tmax18_south)]
+
+# 2018 West: Remove any .na values from dataset
+precip18_west <- values(west_2018_rast[[1]])
+precip18_filtered_west <- precip18_west[!is.na(precip18_west)]
+
+tmin18_west <- values(west_2018_rast[[2]])
+tmin18_filtered_west <- tmin18_west[!is.na(tmin18_west)]
+
+tmax18_west <- values(west_2018_rast[[3]])
+tmax18_filtered_west <- tmax18_west[!is.na(tmax18_west)]
+
+# 2018: Calculate potential evapotranspiration for each region
+# The latitude is used to approximate external radiation
+pet_northeast_2018 <- hargreaves(tmin18_filtered_northeast, 
+                                 tmax18_filtered_northeast, 
+                                 lat = northeast_lat, na.rm = TRUE)
+pet_midwest_2018 <- hargreaves(tmin18_filtered_midwest, 
+                               tmax18_filtered_midwest, 
+                               lat = midwest_lat, na.rm = TRUE)
+pet_south_2018 <- hargreaves(tmin18_filtered_south, 
+                             tmax18_filtered_south, 
+                             lat = south_lat, na.rm = TRUE)
+pet_west_2018 <- hargreaves(tmin18_filtered_west, 
+                            tmax18_filtered_west, 
+                            lat = west_lat, na.rm = TRUE)
+
+# 2019 Northeast: Remove any .na values from dataset
+precip19_northeast <- values(northeast_2019_rast[[1]])
+precip19_filtered_northeast <- precip19_northeast[!is.na(precip19_northeast)]
+
+tmin19_northeast <- values(northeast_2019_rast[[2]])
+tmin19_filtered_northeast <- tmin19_northeast[!is.na(tmin19_northeast)]
+
+tmax19_northeast <- values(northeast_2019_rast[[3]])
+tmax19_filtered_northeast <- tmax19_northeast[!is.na(tmax19_northeast)]
+
+# 2019 Midwest: Remove any .na values from dataset
+precip19_midwest <- values(midwest_2019_rast[[1]])
+precip19_filtered_midwest <- precip19_midwest[!is.na(precip19_midwest)]
+
+tmin19_midwest <- values(midwest_2019_rast[[2]])
+tmin19_filtered_midwest <- tmin19_midwest[!is.na(tmin19_midwest)]
+
+tmax19_midwest <- values(midwest_2019_rast[[3]])
+tmax19_filtered_midwest <- tmax19_midwest[!is.na(tmax19_midwest)]
+
+# 2019 South: Remove any .na values from dataset
+precip19_south <- values(south_2019_rast[[1]])
+precip19_filtered_south <- precip19_south[!is.na(precip19_south)]
+
+tmin19_south <- values(south_2019_rast[[2]])
+tmin19_filtered_south <- tmin19_south[!is.na(tmin19_south)]
+
+tmax19_south <- values(south_2019_rast[[3]])
+tmax19_filtered_south <- tmax19_south[!is.na(tmax19_south)]
+
+# 2019 West: Remove any .na values from dataset
+precip19_west <- values(west_2019_rast[[1]])
+precip19_filtered_west <- precip19_west[!is.na(precip19_west)]
+
+tmin19_west <- values(west_2019_rast[[2]])
+tmin19_filtered_west <- tmin19_west[!is.na(tmin19_west)]
+
+tmax19_west <- values(west_2019_rast[[3]])
+tmax19_filtered_west <- tmax19_west[!is.na(tmax19_west)]
+
+# 2019: Calculate potential evapotranspiration for each region
+# The latitude is used to approximate external radiation
+pet_northeast_2019 <- hargreaves(tmin19_filtered_northeast, 
+                                 tmax19_filtered_northeast, 
+                                 lat = northeast_lat, na.rm = TRUE)
+pet_midwest_2019 <- hargreaves(tmin19_filtered_midwest, 
+                               tmax19_filtered_midwest, 
+                               lat = midwest_lat, na.rm = TRUE)
+pet_south_2019 <- hargreaves(tmin19_filtered_south, 
+                             tmax19_filtered_south, 
+                             lat = south_lat, na.rm = TRUE)
+pet_west_2019 <- hargreaves(tmin19_filtered_west, 
+                            tmax19_filtered_west, 
+                            lat = west_lat, na.rm = TRUE)
+
+# 2020 Northeast: Remove any .na values from dataset
+precip20_northeast <- values(northeast_2020_rast[[1]])
+precip20_filtered_northeast <- precip20_northeast[!is.na(precip20_northeast)]
+
+tmin20_northeast <- values(northeast_2020_rast[[2]])
+tmin20_filtered_northeast <- tmin20_northeast[!is.na(tmin20_northeast)]
+
+tmax20_northeast <- values(northeast_2020_rast[[3]])
+tmax20_filtered_northeast <- tmax20_northeast[!is.na(tmax20_northeast)]
+
+# 2020 Midwest: Remove any .na values from dataset
+precip20_midwest <- values(midwest_2020_rast[[1]])
+precip20_filtered_midwest <- precip20_midwest[!is.na(precip20_midwest)]
+
+tmin20_midwest <- values(midwest_2020_rast[[2]])
+tmin20_filtered_midwest <- tmin20_midwest[!is.na(tmin20_midwest)]
+
+tmax20_midwest <- values(midwest_2020_rast[[3]])
+tmax20_filtered_midwest <- tmax20_midwest[!is.na(tmax20_midwest)]
+
+# 2020 South: Remove any .na values from dataset
+precip20_south <- values(south_2020_rast[[1]])
+precip20_filtered_south <- precip20_south[!is.na(precip20_south)]
+
+tmin20_south <- values(south_2020_rast[[2]])
+tmin20_filtered_south <- tmin20_south[!is.na(tmin20_south)]
+
+tmax20_south <- values(south_2020_rast[[3]])
+tmax20_filtered_south <- tmax20_south[!is.na(tmax20_south)]
+
+# 2020 West: Remove any .na values from dataset
+precip20_west <- values(west_2020_rast[[1]])
+precip20_filtered_west <- precip20_west[!is.na(precip20_west)]
+
+tmin20_west <- values(west_2020_rast[[2]])
+tmin20_filtered_west <- tmin20_west[!is.na(tmin20_west)]
+
+tmax20_west <- values(west_2020_rast[[3]])
+tmax20_filtered_west <- tmax20_west[!is.na(tmax20_west)]
+
+# 2020: Calculate potential evapotranspiration for each region
+# The latitude is used to approximate external radiation
+pet_northeast_2020 <- hargreaves(tmin20_filtered_northeast, 
+                                 tmax20_filtered_northeast, 
+                                 lat = northeast_lat, na.rm = TRUE)
+pet_midwest_2020 <- hargreaves(tmin20_filtered_midwest, 
+                               tmax20_filtered_midwest, 
+                               lat = midwest_lat, na.rm = TRUE)
+pet_south_2020 <- hargreaves(tmin20_filtered_south, 
+                             tmax20_filtered_south, 
+                             lat = south_lat, na.rm = TRUE)
+pet_west_2020 <- hargreaves(tmin20_filtered_west, 
+                            tmax20_filtered_west, 
+                            lat = west_lat, na.rm = TRUE)
+
+# 2021 Northeast: Remove any .na values from dataset
+precip21_northeast <- values(northeast_2021_rast[[1]])
+precip21_filtered_northeast <- precip21_northeast[!is.na(precip21_northeast)]
+
+tmin21_northeast <- values(northeast_2021_rast[[2]])
+tmin21_filtered_northeast <- tmin21_northeast[!is.na(tmin21_northeast)]
+
+tmax21_northeast <- values(northeast_2021_rast[[3]])
+tmax21_filtered_northeast <- tmax21_northeast[!is.na(tmax21_northeast)]
+
+# 2021 Midwest: Remove any .na values from dataset
+precip21_midwest <- values(midwest_2021_rast[[1]])
+precip21_filtered_midwest <- precip21_midwest[!is.na(precip21_midwest)]
+
+tmin21_midwest <- values(midwest_2021_rast[[2]])
+tmin21_filtered_midwest <- tmin21_midwest[!is.na(tmin21_midwest)]
+
+tmax21_midwest <- values(midwest_2021_rast[[3]])
+tmax21_filtered_midwest <- tmax21_midwest[!is.na(tmax21_midwest)]
+
+# 2021 South: Remove any .na values from dataset
+precip21_south <- values(south_2021_rast[[1]])
+precip21_filtered_south <- precip21_south[!is.na(precip21_south)]
+
+tmin21_south <- values(south_2021_rast[[2]])
+tmin21_filtered_south <- tmin21_south[!is.na(tmin21_south)]
+
+tmax21_south <- values(south_2021_rast[[3]])
+tmax21_filtered_south <- tmax21_south[!is.na(tmax21_south)]
+
+# 2021 West: Remove any .na values from dataset
+precip21_west <- values(west_2021_rast[[1]])
+precip21_filtered_west <- precip21_west[!is.na(precip21_west)]
+
+tmin21_west <- values(west_2021_rast[[2]])
+tmin21_filtered_west <- tmin21_west[!is.na(tmin21_west)]
+
+tmax21_west <- values(west_2021_rast[[3]])
+tmax21_filtered_west <- tmax21_west[!is.na(tmax21_west)]
+
+# 2021: Calculate potential evapotranspiration for each region
+# The latitude is used to approximate external radiation
+pet_northeast_2021 <- hargreaves(tmin21_filtered_northeast, 
+                                 tmax21_filtered_northeast, 
+                                 lat = northeast_lat, na.rm = TRUE)
+pet_midwest_2021 <- hargreaves(tmin21_filtered_midwest, 
+                               tmax21_filtered_midwest, 
+                               lat = midwest_lat, na.rm = TRUE)
+pet_south_2021 <- hargreaves(tmin21_filtered_south, 
+                             tmax21_filtered_south, 
+                             lat = south_lat, na.rm = TRUE)
+pet_west_2021 <- hargreaves(tmin21_filtered_west, 
+                            tmax21_filtered_west, 
+                            lat = west_lat, na.rm = TRUE)
+
+# 2022 Northeast: Remove any .na values from dataset
+precip22_northeast <- values(northeast_2022_rast[[1]])
+precip22_filtered_northeast <- precip22_northeast[!is.na(precip22_northeast)]
+
+tmin22_northeast <- values(northeast_2022_rast[[2]])
+tmin22_filtered_northeast <- tmin22_northeast[!is.na(tmin22_northeast)]
+
+tmax22_northeast <- values(northeast_2022_rast[[3]])
+tmax22_filtered_northeast <- tmax22_northeast[!is.na(tmax22_northeast)]
+
+# 2022 Midwest: Remove any .na values from dataset
+precip22_midwest <- values(midwest_2022_rast[[1]])
+precip22_filtered_midwest <- precip22_midwest[!is.na(precip22_midwest)]
+
+tmin22_midwest <- values(midwest_2022_rast[[2]])
+tmin22_filtered_midwest <- tmin22_midwest[!is.na(tmin22_midwest)]
+
+tmax22_midwest <- values(midwest_2022_rast[[3]])
+tmax22_filtered_midwest <- tmax22_midwest[!is.na(tmax22_midwest)]
+
+# 2022 South: Remove any .na values from dataset
+precip22_south <- values(south_2022_rast[[1]])
+precip22_filtered_south <- precip22_south[!is.na(precip22_south)]
+
+tmin22_south <- values(south_2022_rast[[2]])
+tmin22_filtered_south <- tmin22_south[!is.na(tmin22_south)]
+
+tmax22_south <- values(south_2022_rast[[3]])
+tmax22_filtered_south <- tmax22_south[!is.na(tmax22_south)]
+
+# 2022 West: Remove any .na values from dataset
+precip22_west <- values(west_2022_rast[[1]])
+precip22_filtered_west <- precip22_west[!is.na(precip22_west)]
+
+tmin22_west <- values(west_2022_rast[[2]])
+tmin22_filtered_west <- tmin22_west[!is.na(tmin22_west)]
+
+tmax22_west <- values(west_2022_rast[[3]])
+tmax22_filtered_west <- tmax22_west[!is.na(tmax22_west)]
+
+# 2022: Calculate potential evapotranspiration for each region
+# The latitude is used to approximate external radiation
+pet_northeast_2022 <- hargreaves(tmin22_filtered_northeast, 
+                                 tmax22_filtered_northeast, 
+                                 lat = northeast_lat, na.rm = TRUE)
+pet_midwest_2022 <- hargreaves(tmin22_filtered_midwest, 
+                               tmax22_filtered_midwest, 
+                               lat = midwest_lat, na.rm = TRUE)
+pet_south_2022 <- hargreaves(tmin22_filtered_south, 
+                             tmax22_filtered_south, 
+                             lat = south_lat, na.rm = TRUE)
+pet_west_2022 <- hargreaves(tmin22_filtered_west, 
+                            tmax22_filtered_west, 
+                            lat = west_lat, na.rm = TRUE)
+
+# 2023 Northeast: Remove any .na values from dataset
+precip23_northeast <- values(northeast_2023_rast[[1]])
+precip23_filtered_northeast <- precip23_northeast[!is.na(precip23_northeast)]
+
+tmin23_northeast <- values(northeast_2023_rast[[2]])
+tmin23_filtered_northeast <- tmin23_northeast[!is.na(tmin23_northeast)]
+
+tmax23_northeast <- values(northeast_2023_rast[[3]])
+tmax23_filtered_northeast <- tmax23_northeast[!is.na(tmax23_northeast)]
+
+# 2023 Midwest: Remove any .na values from dataset
+precip23_midwest <- values(midwest_2023_rast[[1]])
+precip23_filtered_midwest <- precip23_midwest[!is.na(precip23_midwest)]
+
+tmin23_midwest <- values(midwest_2023_rast[[2]])
+tmin23_filtered_midwest <- tmin23_midwest[!is.na(tmin23_midwest)]
+
+tmax23_midwest <- values(midwest_2023_rast[[3]])
+tmax23_filtered_midwest <- tmax23_midwest[!is.na(tmax23_midwest)]
+
+# 2023 South: Remove any .na values from dataset
+precip23_south <- values(south_2023_rast[[1]])
+precip23_filtered_south <- precip23_south[!is.na(precip23_south)]
+
+tmin23_south <- values(south_2023_rast[[2]])
+tmin23_filtered_south <- tmin23_south[!is.na(tmin23_south)]
+
+tmax23_south <- values(south_2023_rast[[3]])
+tmax23_filtered_south <- tmax23_south[!is.na(tmax23_south)]
+
+# 2023 West: Remove any .na values from dataset
+precip23_west <- values(west_2023_rast[[1]])
+precip23_filtered_west <- precip23_west[!is.na(precip23_west)]
+
+tmin23_west <- values(west_2023_rast[[2]])
+tmin23_filtered_west <- tmin23_west[!is.na(tmin23_west)]
+
+tmax23_west <- values(west_2023_rast[[3]])
+tmax23_filtered_west <- tmax23_west[!is.na(tmax23_west)]
+
+# 2023: Calculate potential evapotranspiration for each region
+# The latitude is used to approximate external radiation
+pet_northeast_2023 <- hargreaves(tmin23_filtered_northeast, 
+                                 tmax23_filtered_northeast, 
+                                 lat = northeast_lat, na.rm = TRUE)
+pet_midwest_2023 <- hargreaves(tmin23_filtered_midwest, 
+                               tmax23_filtered_midwest, 
+                               lat = midwest_lat, na.rm = TRUE)
+pet_south_2023 <- hargreaves(tmin23_filtered_south, 
+                             tmax23_filtered_south, 
+                             lat = south_lat, na.rm = TRUE)
+pet_west_2023 <- hargreaves(tmin23_filtered_west, 
+                            tmax23_filtered_west, 
+                            lat = west_lat, na.rm = TRUE)
+
+#-------------------------------------------------------------------------------
+#-------------------- Calculate Palmer Drought Severity Index ------------------
+#-------------------------------------------------------------------------------
+
+# scPDSI was removed from CRAN but I found an archived version
+# install.packages("https://cran.r-project.org/src/contrib/Archive/scPDSI/scPDSI_0.1.3.tar.gz", 
+#                  repo=NULL, type="source")
+
+library(scPDSI)
+??scPDSI
+
+# The scPDSI function requires the precipitation data by month in one variable, 
+#     and the PET data by month in another variable
+
+# pdsi generates a 10-object list, according to the documentation.
+# The first element is the function call
+# The second element is "X: time series of the x values,
+#     i.e. the Palmer Drought Severity Index  (PDSI)"
+
+# Join Precipitation Northeast
+precip_northeast <- c(precip18_filtered_northeast, precip19_filtered_northeast, 
+                      precip20_filtered_northeast, precip21_filtered_northeast,
+                      precip22_filtered_northeast, precip23_filtered_northeast)
+
+# Join Precipitation Midwest
+precip_midwest <- c(precip18_filtered_midwest, precip19_filtered_midwest, 
+                    precip20_filtered_midwest, precip21_filtered_midwest,
+                    precip22_filtered_midwest, precip23_filtered_midwest)
+
+# Join Precipitation South
+precip_south <- c(precip18_filtered_south, precip19_filtered_south, 
+                  precip20_filtered_south, precip21_filtered_south,
+                  precip22_filtered_south, precip23_filtered_south)
+
+# Join Precipitation West
+precip_west <- c(precip18_filtered_west, precip19_filtered_west, 
+                 precip20_filtered_west, precip21_filtered_west,
+                 precip22_filtered_west, precip23_filtered_west)
+
+# Join Potential Evapotranspiration Northeast
+pet_northeast <- c(pet_northeast_2018, pet_northeast_2019, 
+                   pet_northeast_2020, pet_northeast_2021,
+                   pet_northeast_2022, pet_northeast_2023)
+
+# Join Potential Evapotranspiration Midwest
+pet_midwest <- c(pet_midwest_2018, pet_midwest_2019, 
+                 pet_midwest_2020, pet_midwest_2021,
+                 pet_midwest_2022, pet_midwest_2023)
+
+# Join Potential Evapotranspiration South
+pet_south <- c(pet_south_2018, pet_south_2019, 
+               pet_south_2020, pet_south_2021,
+               pet_south_2022, pet_south_2023)
+
+# Join Potential Evapotranspiration West
+pet_west <- c(pet_west_2018, pet_west_2019, 
+              pet_west_2019, pet_west_2021,
+              pet_west_2022, pet_west_2023)
+
+#-------------------------------------------------------------------------------
+#------------ Calculate Palmer Drought Severity Index for 2018-2023 ------------
+#-------------------------------------------------------------------------------
+
+# PDSI Northeast
+pdsi_Northeast_calc <- pdsi(precip_northeast, pet_northeast, 
+                            start = 2017, end = 2023, sc = FALSE)
+pdsi_Northeast_6yr <- pdsi_Northeast_calc[[2]]
+plot(pdsi_Northeast_6yr)
+
+# PDSI Midwest
+pdsi_Midwest_calc <- pdsi(precip_midwest, pet_midwest, 
+                          start = 2017, end = 2023, sc = FALSE)
+pdsi_Midwest_6yr <- pdsi_Midwest_calc[[2]]
+plot(pdsi_Midwest_6yr)
+
+# PDSI South
+pdsi_South_calc <- pdsi(precip_south, pet_south, 
+                        start = 2017, end = 2023, sc = FALSE)
+pdsi_South_6yr <- pdsi_South_calc[[2]]
+plot(pdsi_South_6yr)
+
+# PDSI West
+pdsi_West_calc <- pdsi(precip_west, pet_west, 
+                       start = 2017, end = 2023, sc = FALSE)
+pdsi_West_6yr <- pdsi_West_calc[[2]]
+plot(pdsi_West_6yr)
+
+# Save .rds files for the 4-region Palmer Drought Severity Index Calculations
+saveRDS(pdsi_Northeast_6yr, file = "pdsi_Northeast_6yr.rds")
+saveRDS(pdsi_Midwest_6yr, file = "pdsi_Midwest_6yr.rds")
+saveRDS(pdsi_South_6yr, file = "pdsi_South_6yr.rds")
+saveRDS(pdsi_West_6yr, file = "pdsi_West_6yr.rds")
+
+#-------------------------------------------------------------------------------
+#------------ Calculate Palmer Drought Severity Index for 2018-2050 ------------
+#-------------------------------------------------------------------------------
+
+# PDSI Northeast
+pdsi_Northeast_calc <- pdsi(precip_northeast, pet_northeast, 
+                            start = 2017, end = 2050, sc = FALSE)
+pdsi_Northeast_32yr <- pdsi_Northeast_calc[[2]]
+plot(pdsi_Northeast_32yr)
+
+# PDSI Midwest
+pdsi_Midwest_calc <- pdsi(precip_midwest, pet_midwest, 
+                          start = 2017, end = 2050, sc = FALSE)
+pdsi_Midwest_32yr <- pdsi_Midwest_calc[[2]]
+plot(pdsi_Midwest_32yr)
+
+# PDSI South
+pdsi_South_calc <- pdsi(precip_south, pet_south, 
+                        start = 2017, end = 2050, sc = FALSE)
+pdsi_South_32yr <- pdsi_South_calc[[2]]
+plot(pdsi_South_32yr)
+
+# PDSI West
+pdsi_West_calc <- pdsi(precip_west, pet_west, 
+                       start = 2017, end = 2050, sc = FALSE)
+pdsi_West_32yr <- pdsi_West_calc[[2]]
+plot(pdsi_West_32yr)
+
+# Save .rds files for the 4-region Palmer Drought Severity Index Calculations
+saveRDS(pdsi_Northeast_32yr, file = "pdsi_Northeast_32yr.rds")
+saveRDS(pdsi_Midwest_32yr, file = "pdsi_Midwest_32yr.rds")
+saveRDS(pdsi_South_32yr, file = "pdsi_South_32yr.rds")
+saveRDS(pdsi_West_32yr, file = "pdsi_West_32yr.rds")
+
+#-------------------------------------------------------------------------------
+#------------ Calculate Palmer Drought Severity Index for 2018-2098 ------------
+#-------------------------------------------------------------------------------
+
+# PDSI Northeast
+pdsi_Northeast_calc <- pdsi(precip_northeast, pet_northeast, 
+                            start = 2017, end = 2098, sc = FALSE)
+pdsi_Northeast_80yr <- pdsi_Northeast_calc[[2]]
+plot(pdsi_Northeast_80yr)
+
+# PDSI Midwest
+pdsi_Midwest_calc <- pdsi(precip_midwest, pet_midwest, 
+                          start = 2017, end = 2098, sc = FALSE)
+pdsi_Midwest_80yr <- pdsi_Midwest_calc[[2]]
+plot(pdsi_Midwest_80yr)
+
+# PDSI South
+pdsi_South_calc <- pdsi(precip_south, pet_south, 
+                        start = 2017, end = 2098, sc = FALSE)
+pdsi_South_80yr <- pdsi_South_calc[[2]]
+plot(pdsi_South_80yr)
+
+# PDSI West
+pdsi_West_calc <- pdsi(precip_west, pet_west, 
+                       start = 2017, end = 2098, sc = FALSE)
+pdsi_West_80yr <- pdsi_West_calc[[2]]
+plot(pdsi_West_80yr)
+
+# Save .rds files for the 4-region Palmer Drought Severity Index Calculations
+saveRDS(pdsi_Northeast_80yr, file = "pdsi_Northeast_80yr.rds")
+saveRDS(pdsi_Midwest_80yr, file = "pdsi_Midwest_80yr.rds")
+saveRDS(pdsi_South_80yr, file = "pdsi_South_80yr.rds")
+saveRDS(pdsi_West_80yr, file = "pdsi_West_80yr.rds")
+```
+
+<span style="color: #FF69B4;">Ben's Potential Evapotranspiration Calculation and Palmer Drought Severity Index (BG)</span> 
+<br/>
+```{r, eval = FALSE}
+library(terra)
+library(dplyr)
+library(sf)
+library(ggplot2)
+library(grid)
+library(gridExtra)
+library(cowplot)
+library(zoo)
+
+
+#-------------------------------------------------------------------------------
+#------------------------------ Read in All Data--------------------------------
+#-------------------------------------------------------------------------------
+pdsi_Northeast_6yr <- readRDS("pdsi_Northeast_6yr.rds")
+pdsi_Midwest_6yr <- readRDS("pdsi_Midwest_6yr.rds")
+pdsi_South_6yr <- readRDS("pdsi_South_6yr.rds")
+pdsi_West_6yr <- readRDS("pdsi_West_6yr.rds")
+
+pdsi_Northeast_32yr <- readRDS("pdsi_Northeast_32yr.rds")
+pdsi_Midwest_32yr <- readRDS("pdsi_Midwest_32yr.rds")
+pdsi_South_32yr <- readRDS("pdsi_South_32yr.rds")
+pdsi_West_32yr <- readRDS("pdsi_West_32yr.rds")
+
+pdsi_Northeast_80yr <- readRDS("pdsi_Northeast_80yr.rds")
+pdsi_Midwest_80yr <- readRDS("pdsi_Midwest_80yr.rds")
+pdsi_South_80yr <- readRDS("pdsi_South_80yr.rds")
+pdsi_West_80yr <- readRDS("pdsi_West_80yr.rds")
+
+#-------------------------------------------------------------------------------
+#---------- Plot Palmer Drought Severity Index for Northeast 2018-2023 ---------
+#-------------------------------------------------------------------------------
+# Convert time series to zoo object
+pdsi_northeast_zoo <- as.zoo(pdsi_Northeast_6yr)
+
+# Convert to data frame with Year and Month columns
+df_northeast <- data.frame(
+  Year = as.integer(format(time(pdsi_northeast_zoo), "%Y")),
+  Month = as.integer(format(time(pdsi_northeast_zoo), "%m")),
+  Index = coredata(pdsi_northeast_zoo)
+)
+
+print(df_northeast)
+
+# Remove 2017 entries
+df_northeast_filtered <- df_northeast[-c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), ]
+
+# Create date column from year and month to show up right on the plot
+df_northeast_filtered$Date <- as.Date(paste(df_northeast_filtered$Year, 
+                                            df_northeast_filtered$Month, "01", 
+                                            sep="-"))
+
+# Plot using ggplot2
+northeast_6yr_plot <- ggplot(df_northeast_filtered, aes(x = Date, y = Index)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
+  labs(x = "Year", y = "Index", title = "Northeast") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+#-------------------------------------------------------------------------------
+#---------- Plot Palmer Drought Severity Index for Midwest 2018-2023 -----------
+#-------------------------------------------------------------------------------
+# Convert time series to zoo object
+pdsi_midwest_zoo <- as.zoo(pdsi_Midwest_6yr)
+
+# Convert to data frame with Year and Month columns
+df_midwest <- data.frame(
+  Year = as.integer(format(time(pdsi_midwest_zoo), "%Y")),
+  Month = as.integer(format(time(pdsi_midwest_zoo), "%m")),
+  Index = coredata(pdsi_midwest_zoo)
+)
+
+print(df_midwest)
+
+# Remove 2017 entries
+df_midwest_filtered <- df_midwest[-c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), ]
+
+# Create date column from year and month to show up right on the plot
+df_midwest_filtered$Date <- as.Date(paste(df_midwest_filtered$Year, 
+                                          df_midwest_filtered$Month, "01", 
+                                          sep="-"))
+
+# Plot using ggplot2
+midwest_6yr_plot <- ggplot(df_midwest_filtered, aes(x = Date, y = Index)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
+  labs(x = "Year", y = "Index", title = "Midwest") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+#-------------------------------------------------------------------------------
+#---------- Plot Palmer Drought Severity Index for South 2018-2023 -----------
+#-------------------------------------------------------------------------------
+# Convert time series to zoo object
+pdsi_south_zoo <- as.zoo(pdsi_South_6yr)
+
+# Convert to data frame with Year and Month columns
+df_south <- data.frame(
+  Year = as.integer(format(time(pdsi_south_zoo), "%Y")),
+  Month = as.integer(format(time(pdsi_south_zoo), "%m")),
+  Index = coredata(pdsi_south_zoo)
+)
+
+print(df_south)
+
+# Remove 2017 entries
+df_south_filtered <- df_south[-c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), ]
+
+# Create date column from year and month to show up right on the plot
+df_south_filtered$Date <- as.Date(paste(df_south_filtered$Year, 
+                                        df_south_filtered$Month, "01", 
+                                        sep="-"))
+
+# Plot using ggplot2
+south_6yr_plot <- ggplot(df_south_filtered, aes(x = Date, y = Index)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
+  labs(x = "Year", y = "Index", title = "South") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+#-------------------------------------------------------------------------------
+#---------- Plot Palmer Drought Severity Index for West 2018-2023 -----------
+#-------------------------------------------------------------------------------
+# Convert time series to zoo object
+pdsi_west_zoo <- as.zoo(pdsi_West_6yr)
+
+# Convert to data frame with Year and Month columns
+df_west <- data.frame(
+  Year = as.integer(format(time(pdsi_west_zoo), "%Y")),
+  Month = as.integer(format(time(pdsi_west_zoo), "%m")),
+  Index = coredata(pdsi_west_zoo)
+)
+
+print(df_west)
+
+# Remove 2017 entries
+df_west_filtered <- df_west[-c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), ]
+
+# Create date column from year and month to show up right on the plot
+df_west_filtered$Date <- as.Date(paste(df_west_filtered$Year, 
+                                       df_west_filtered$Month, "01", sep="-"))
+
+# Plot using ggplot2
+west_6yr_plot <- ggplot(df_west_filtered, aes(x = Date, y = Index)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
+  labs(x = "Year", y = "Index", title = "West") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+#-------------------------------------------------------------------------------
+#---------- Plot Palmer Drought Severity Index for Northeast 2018-2050 ---------
+#-------------------------------------------------------------------------------
+# Convert time series to zoo object
+pdsi_northeast_32yr_zoo <- as.zoo(pdsi_Northeast_32yr)
+
+# Convert to data frame with Year and Month columns
+df_northeast_32yr <- data.frame(
+  Year = as.integer(format(time(pdsi_northeast_32yr_zoo), "%Y")),
+  Month = as.integer(format(time(pdsi_northeast_32yr_zoo), "%m")),
+  Index = coredata(pdsi_northeast_32yr_zoo)
+)
+
+print(df_northeast_32yr)
+
+# Remove 2017 entries
+df_northeast_32yr_filtered <- df_northeast_32yr[-c(1, 2, 3, 4, 5, 6, 7, 
+                                                   8, 9, 10, 11, 12), ]
+
+# Create date column from year and month to show up right on the plot
+df_northeast_32yr_filtered$Date <- as.Date(paste(df_northeast_32yr_filtered$Year, 
+                                                 df_northeast_32yr_filtered$Month, 
+                                                 "01", sep="-"))
+
+# Plot using ggplot2
+northeast_32yr_plot <- ggplot(df_northeast_32yr_filtered, aes(x = Date, 
+                                                              y = Index)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
+  labs(x = "Year", y = "Index", title = "Northeast") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+#-------------------------------------------------------------------------------
+#---------- Plot Palmer Drought Severity Index for Midwest 2018-2050 -----------
+#-------------------------------------------------------------------------------
+# Convert time series to zoo object
+pdsi_midwest_32yr_zoo <- as.zoo(pdsi_Midwest_32yr)
+
+# Convert to data frame with Year and Month columns
+df_midwest_32yr <- data.frame(
+  Year = as.integer(format(time(pdsi_midwest_32yr_zoo), "%Y")),
+  Month = as.integer(format(time(pdsi_midwest_32yr_zoo), "%m")),
+  Index = coredata(pdsi_midwest_32yr_zoo)
+)
+
+print(df_midwest_32yr)
+
+# Remove 2017 entries
+df_midwest_32yr_filtered <- df_midwest_32yr[-c(1, 2, 3, 4, 5, 6, 7, 
+                                               8, 9, 10, 11, 12), ]
+
+# Create date column from year and month to show up right on the plot
+df_midwest_32yr_filtered$Date <- as.Date(paste(df_midwest_32yr_filtered$Year, 
+                                               df_midwest_32yr_filtered$Month, 
+                                               "01", sep="-"))
+
+# Plot using ggplot2
+midwest_32yr_plot <- ggplot(df_midwest_32yr_filtered, aes(x = Date, y = Index)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
+  labs(x = "Year", y = "Index", title = "Midwest") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+#-------------------------------------------------------------------------------
+#---------- Plot Palmer Drought Severity Index for South 2018-2050 -----------
+#-------------------------------------------------------------------------------
+# Convert time series to zoo object
+pdsi_south_32yr_zoo <- as.zoo(pdsi_South_32yr)
+
+# Convert to data frame with Year and Month columns
+df_south_32yr <- data.frame(
+  Year = as.integer(format(time(pdsi_south_32yr_zoo), "%Y")),
+  Month = as.integer(format(time(pdsi_south_32yr_zoo), "%m")),
+  Index = coredata(pdsi_south_32yr_zoo)
+)
+
+print(df_south_32yr)
+
+# Remove 2017 entries
+df_south_32yr_filtered <- df_south_32yr[-c(1, 2, 3, 4, 5, 6, 7, 
+                                           8, 9, 10, 11, 12), ]
+
+# Create date column from year and month to show up right on the plot
+df_south_32yr_filtered$Date <- as.Date(paste(df_south_32yr_filtered$Year, 
+                                             df_south_32yr_filtered$Month, 
+                                             "01", sep="-"))
+
+# Plot using ggplot2
+south_32yr_plot <- ggplot(df_south_32yr_filtered, aes(x = Date, y = Index)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
+  labs(x = "Year", y = "Index", title = "South") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+#-------------------------------------------------------------------------------
+#---------- Plot Palmer Drought Severity Index for West 2018-2050 -----------
+#-------------------------------------------------------------------------------
+# Convert time series to zoo object
+pdsi_west_32yr_zoo <- as.zoo(pdsi_West_32yr)
+
+# Convert to data frame with Year and Month columns
+df_west_32yr <- data.frame(
+  Year = as.integer(format(time(pdsi_west_32yr_zoo), "%Y")),
+  Month = as.integer(format(time(pdsi_west_32yr_zoo), "%m")),
+  Index = coredata(pdsi_west_32yr_zoo)
+)
+
+print(df_west_32yr)
+
+# Remove 2017 entries
+df_west_32yrfiltered <- df_west_32yr[-c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), ]
+
+# Create date column from year and month to show up right on the plot
+df_west_32yrfiltered$Date <- as.Date(paste(df_west_32yrfiltered$Year, 
+                                           df_west_32yrfiltered$Month, "01", 
+                                           sep="-"))
+
+# Plot using ggplot2
+west_32yr_plot <- ggplot(df_west_32yrfiltered, aes(x = Date, y = Index)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
+  labs(x = "Year", y = "Index", title = "West") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+#-------------------------------------------------------------------------------
+#---------- Plot Palmer Drought Severity Index for Northeast 2018-2098 ---------
+#-------------------------------------------------------------------------------
+# Convert time series to zoo object
+pdsi_northeast_80_yr_zoo <- as.zoo(pdsi_Northeast_80yr)
+
+# Convert to data frame with Year and Month columns
+df_northeast_80yr <- data.frame(
+  Year = as.integer(format(time(pdsi_northeast_80_yr_zoo), "%Y")),
+  Month = as.integer(format(time(pdsi_northeast_80_yr_zoo), "%m")),
+  Index = coredata(pdsi_northeast_80_yr_zoo)
+)
+
+print(df_northeast_80yr)
+
+# Remove 2017 entries
+df_northeast_80yr_filtered <- df_northeast_80yr[-c(1, 2, 3, 4, 5, 6, 7, 
+                                                   8, 9, 10, 11, 12), ]
+
+# Create date column from year and month to show up right on the plot
+df_northeast_80yr_filtered$Date <- as.Date(paste(df_northeast_80yr_filtered$Year, 
+                                                 df_northeast_80yr_filtered$Month, 
+                                                 "01", sep="-"))
+
+# Plot using ggplot2
+northeast_80yr_plot <- ggplot(df_northeast_80yr_filtered, aes(x = Date, y = Index)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
+  labs(x = "Year", y = "Index", title = "Northeast") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+#-------------------------------------------------------------------------------
+#---------- Plot Palmer Drought Severity Index for Midwest 2018-2098 -----------
+#-------------------------------------------------------------------------------
+# Convert time series to zoo object
+pdsi_midwest_80yr_zoo <- as.zoo(pdsi_Midwest_80yr)
+
+# Convert to data frame with Year and Month columns
+df_midwest_80yr <- data.frame(
+  Year = as.integer(format(time(pdsi_midwest_80yr_zoo), "%Y")),
+  Month = as.integer(format(time(pdsi_midwest_80yr_zoo), "%m")),
+  Index = coredata(pdsi_midwest_80yr_zoo)
+)
+
+print(df_midwest_80yr)
+
+# Remove 2017 entries
+df_midwest_80yr_filtered <- df_midwest_80yr[-c(1, 2, 3, 4, 5, 6, 7, 
+                                               8, 9, 10, 11, 12), ]
+
+# Create date column from year and month to show up right on the plot
+df_midwest_80yr_filtered$Date <- as.Date(paste(df_midwest_80yr_filtered$Year, 
+                                               df_midwest_80yr_filtered$Month, 
+                                               "01", sep="-"))
+
+# Plot using ggplot2
+midwest_80yr_plot <- ggplot(df_midwest_80yr_filtered, aes(x = Date, y = Index)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
+  labs(x = "Year", y = "Index", title = "Midwest") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+#-------------------------------------------------------------------------------
+#---------- Plot Palmer Drought Severity Index for South 2018-2098 -------------
+#-------------------------------------------------------------------------------
+# Convert time series to zoo object
+pdsi_south_80yr_zoo <- as.zoo(pdsi_South_80yr)
+
+# Convert to data frame with Year and Month columns
+df_south_80yr <- data.frame(
+  Year = as.integer(format(time(pdsi_south_80yr_zoo), "%Y")),
+  Month = as.integer(format(time(pdsi_south_80yr_zoo), "%m")),
+  Index = coredata(pdsi_south_80yr_zoo)
+)
+
+print(df_south_80yr)
+
+# Remove 2017 entries
+df_south_80yr_filtered <- df_south_80yr[-c(1, 2, 3, 4, 5, 6, 7, 
+                                           8, 9, 10, 11, 12), ]
+
+# Create date column from year and month to show up right on the plot
+df_south_80yr_filtered$Date <- as.Date(paste(df_south_80yr_filtered$Year, 
+                                             df_south_80yr_filtered$Month, 
+                                             "01", sep="-"))
+
+# Plot using ggplot2
+south_80yr_plot <- ggplot(df_south_80yr_filtered, aes(x = Date, y = Index)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
+  labs(x = "Year", y = "Index", title = "South") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+#-------------------------------------------------------------------------------
+#---------- Plot Palmer Drought Severity Index for West 2018-2098 --------------
+#-------------------------------------------------------------------------------
+# Convert time series to zoo object
+pdsi_west_80yr_zoo <- as.zoo(pdsi_West_80yr)
+
+# Convert to data frame with Year and Month columns
+df_west_80yr <- data.frame(
+  Year = as.integer(format(time(pdsi_west_80yr_zoo), "%Y")),
+  Month = as.integer(format(time(pdsi_west_80yr_zoo), "%m")),
+  Index = coredata(pdsi_west_80yr_zoo)
+)
+
+print(df_west_80yr)
+
+# Remove 2017 entries
+df_west_80yrfiltered <- df_west_80yr[-c(1, 2, 3, 4, 5, 6, 7, 
+                                        8, 9, 10, 11, 12), ]
+
+# Create date column from year and month to show up right on the plot
+df_west_80yrfiltered$Date <- as.Date(paste(df_west_80yrfiltered$Year, 
+                                           df_west_80yrfiltered$Month, 
+                                           "01", sep="-"))
+
+# Plot using ggplot2
+west_80yr_plot <- ggplot(df_west_80yrfiltered, aes(x = Date, y = Index)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
+  labs(x = "Year", y = "Index", title = "West") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Plot Palmer Drought Severity Index for All Regions 2018-2023
+collection_6yr <- grid.arrange(northeast_6yr_plot, midwest_6yr_plot, 
+                               south_6yr_plot, west_6yr_plot,
+                               top = textGrob("Palmer Drought 
+                                              Severity Index 2018-2023", 
+                                              gp = gpar(fontsize = 14)))
+
+# Plot Palmer Drought Severity Index for All Regions 2018-2050
+collection_32yr <- grid.arrange(northeast_32yr_plot, midwest_32yr_plot, 
+                                south_32yr_plot, west_32yr_plot,
+                                top = textGrob("Palmer Drought 
+                                               Severity Index 2018-2050", 
+                                               gp = gpar(fontsize = 14)))
+
+# Plot Palmer Drought Severity Index for All Regions 2018-2098
+collection_80yr <- grid.arrange(northeast_80yr_plot, midwest_80yr_plot, 
+                                south_80yr_plot, west_80yr_plot,
+                                top = textGrob("Palmer Drought 
+                                               Severity Index 2018-2050", 
+                                               gp = gpar(fontsize = 14)))
+
+saveRDS(collection_6yr, file = "collection_6yr.rds")
+saveRDS(collection_32yr, file = "collection_32yr.rds")
+saveRDS(collection_80yr, file = "collection_80yr.rds")
+```
+
+<img src="../collection_6yr.png" alt="Caption for the picture." width="800" height="600">
+<img src="../collection_32yr.png" alt="Caption for the picture." width="800" height="600">
+<img src="../collection_80yr.png" alt="Caption for the picture." width="800" height="600">
+
+### Jared Boone Methods
+
+```{r}
+library(terra)
+library(dplyr)
+library(sf)
+```
+<style>
+.justify {
+  text-align: justify;
+}
+</style>
+
+<div class="justify">
+Using tif files downloaded from google earth engine with data from the 
+NASA NEX-DCP30 image collection, I created rasters with climate variables for 
+each year from 2018 to 2023. The precipitation variable was then extracted from 
+the original raster to create a separate raster showing only precipitation 
+totals by year. The original unit for precipitation was kg/m^2^/s, which was then 
+converted to mm/year for a more legible unit measurement. Each raster was put 
+into a stack to show the precipitation totals by year side-by-side.</div>
+
+```{r, eval = FALSE}
+# Writing in rasters to obtain precipitation data
+
+# 2018 climate data
+climate_var18 <- rast(here::here("images/2018_hiRes.tif"))
+# Converting original precipitation unit (kg/m^2/s) to mm/year
+# 1 kg/m^2/s = 86400 mm/day
+precip_2018 <- climate_var18$pr * 86400 * 365
+
+# 2019 climate data
+climate_var19 <- rast(here::here("images/2019_hiRes.tif"))
+precip_2019 <- climate_var19$pr * 86400 * 365
+
+# 2020 climate data
+climate_var20 <- rast(here::here("images/2020_hiRes.tif"))
+precip_2020 <- climate_var20$pr * 86400 * 366
+
+# 2021 climate data
+climate_var21 <- rast(here::here("images/2021_hiRes.tif"))
+precip_2021 <- climate_var21$pr * 86400 * 365
+
+# 2022 climate data
+climate_var22 <- rast(here::here("images/2022_hiRes.tif"))
+precip_2022 <- climate_var22$pr * 86400 * 365
+
+# 2023 climate data
+climate_var23 <- rast(here::here("images/2023_hiRes.tif"))
+precip_2023 <- climate_var23$pr * 86400 * 365
+
+# creating raster stack of yearly precipitation over a 6 year period
+precip_6year <- rast(list(precip_2018, precip_2019, precip_2020, precip_2021,
+                     precip_2022, precip_2023))
+# naming each raster in the stack based on the year
+names(precip_6year) <- c("2018", "2019", "2020", "2021", "2022", "2023")
+
+# plotting the raster stack
+plot(precip_6year, axes = FALSE, mar = c(1, 1, 4, 6))
+```
+
+<img src="../images/Precipitation/Raster_images/US_Precipitation_Yearly.png" alt="Caption for the picture." width="800" height="500">
+
+Precipitation patterns vary by region due to the different climates across
+biomes in the US, so it was important to compare the precipitation patterns by
+region. A vector shapefile of US states was read into RStudio, where the
+shapefile was filtered by region and summarized to dissolve the states within
+each region to yield the geometry of the region. The coordinate CRS for the
+states shapefile was WGS 84, or EPSG:4326.
+
+```{r}
+# Reading in a shapefile of US states and extracting regions
+
+# US States
+us_regions <- read_sf("../data/States_shapefile.shp") %>% print
+
+# Northeast
+ne_region <- filter(us_regions, Region == "Northeast") %>% summarize %>% 
+  print
+
+# Midwest
+mdw_region <- filter(us_regions, Region == "Midwest") %>% summarize %>% 
+  print
+
+# South
+s_region <- filter(us_regions, Region == "South") %>% summarize %>% 
+  print
+
+# West
+w_region <- filter(us_regions, Region == "West") %>% summarize %>% 
+  print
+```
+
+The code below shows the results of the last code block plotted.
+
+```{r, fig.width = 6, fig.height= 5}
+plot(st_geometry(ne_region))
+
+plot(st_geometry(mdw_region))
+
+plot(st_geometry(s_region))
+
+plot(st_geometry(w_region))
+```
+<style>
+.justify {
+  text-align: justify;
+}
+</style>
+
+<div class="justify">
+With the region geometry defined, the raster cells in the precipitation raster 
+were cropped and masked to each region. Using the new rasters masked to the 
+region geometry, global statistics were calculated to determine the mean 
+precipitation and the total precipitation by region, put into a data frame.
+Using the data frame created from the global statistics, mean precipitation and
+total precipitation were plotted in a line graph to determine how those values
+changed over a 6-year period.
+
+I then determined the area of land by region that had a precipitation total 
+greater than the mean precipitation. I did that by first creating new variables
+that defined a boolean expression where the the precipitation totals in the
+regional raster stacks were greater than the mean precipitation. I then plotted
+the defined variables.
+
+Next, in order to get area calculations, I needed to set raster values less 
+than the mean precipitation to NA. First, I created new variables to crop and 
+mask the yearly precipitation totals to the region shapefile. I then used the 
+`clamp` function to set all values less than the mean precipitation for that 
+year to NA. Each yearly_raster was then put into a stack, where the `expanse` 
+function was used to calculate the area of raster cells with a total 
+precipitation value greater than the mean. This was done to determine if there 
+was any difference in the area of land that experience high yearly precipitation
+by year.</div>
+
+
+### Jared Boone Results
+
+The following plot represents rasters of precipitation totals by region in the 
+US for each year.
+
+```{r, eval = FALSE}
+# Cropping and masking raster values to each US region
+# Plotting each masked raster
+
+# Northeast
+precip_ne_6year <- crop(precip_6year, ne_region, mask = TRUE)
+plot(precip_ne_6year, axes = FALSE, mar = c(1, 1, 4, 5))
+
+# Midwest
+precip_mdw_6year <- crop(precip_6year, mdw_region, mask = TRUE)
+plot(precip_mdw_6year, axes = FALSE, mar = c(1, 1, 4, 5))
+
+# South
+precip_s_6year <- crop(precip_6year, s_region, mask = TRUE)
+plot(precip_s_6year, axes = FALSE, mar = c(1, 1, 4, 6))
+
+# West
+precip_w_6year <- crop(precip_6year, w_region, mask = TRUE)
+plot(precip_w_6year, axes = FALSE, mar = c(1, 1, 4, 5))
+```
+
+<img src="../images/Precipitation/Raster_images/Northeast_Precipitation_Yearly.png" alt="Caption for the picture." width="800" height="500">
+<img src="../images/Precipitation/Raster_images/Midwest_Precipitation_Yearly.png" alt="Caption for the picture." width="800" height="500">
+<img src="../images/Precipitation/Raster_images/South_Precipitation_Yearly.png" alt="Caption for the picture." width="800" height="500">
+<img src="../images/Precipitation/Raster_images/West_Precipitation_Yearly.png" alt="Caption for the picture." width="800" height="500">
+
+The following code block shows data frames of global statistics calculated for 
+precipitation measurements by region. Each data frame has sum and mean of 
+precipitation values by year.
+
+```{r, eval = FALSE}
+# Calculating global statistics by region
+
+# Northeast
+ne_precip <- global(precip_ne_6year, c("mean", "sum"), na.rm = TRUE) %>% 
+  print
+
+# Midwest
+mdw_precip <- global(precip_mdw_6year, c("mean", "sum"), na.rm = TRUE) %>% 
+  print
+
+# South
+s_precip <- global(precip_s_6year, c("mean", "sum"), na.rm = TRUE) %>% 
+  print
+
+# West
+w_precip <- global(precip_w_6year, c("mean", "sum"), na.rm = TRUE) %>% 
+  print
+```
+
+<img src="../images/Precipitation/Screenshots/global_statistics_ne.png" alt="Caption for the picture." width="800" height="300">
+<img src="../images/Precipitation/Screenshots/global_statistics_mdw.png" alt="Caption for the picture." width="800" height="300">
+<img src="../images/Precipitation/Screenshots/global_statistics_s.png" alt="Caption for the picture." width="800" height="300">
+<img src="../images/Precipitation/Screenshots/global_statistics_w.png" alt="Caption for the picture." width="800" height="300">
+
+The following two code blocks show line graphs of total and mean precipitation
+by region and year.
+
+```{r, eval = FALSE}
+# Plotting total precipitation by year using global statistics
+
+# Northeast
+plot(x = rownames(ne_precip), y = ne_precip$sum,
+     type = "l", 
+     main = "Total Precipitation by Year in Northeast",
+     xlab = "Year", 
+     ylab = "Total (mm)")
+
+# Midwest
+plot(x = rownames(mdw_precip), y = mdw_precip$sum,
+     type = "l",
+     main = "Total Precipitation by Year in Midwest",
+     xlab = "Year", 
+     ylab = "Total (mm)")
+
+# South
+plot(x = rownames(s_precip), y = s_precip$sum,
+     type = "l",
+     main = "Total Precipitation by Year in South",
+     xlab = "Year", 
+     ylab = "Total (mm)")
+
+# West
+plot(x = rownames(w_precip), y = w_precip$sum,
+     type = "l",
+     main = "Total Precipitation by Year in West",
+     xlab = "Year", 
+     ylab = "Total (mm)")
+```
+
+<img src="../images/Precipitation/Line_graphs/Total_Precipitation_Yearly_NE.png" alt="Caption for the picture." width="800" height="500">
+<img src="../images/Precipitation/Line_graphs/Total_Precipitation_Yearly_MDW.png" alt="Caption for the picture." width="800" height="500">
+<img src="../images/Precipitation/Line_graphs/Total_Precipitation_Yearly_S.png" alt="Caption for the picture." width="800" height="500">
+<img src="../images/Precipitation/Line_graphs/Total_Precipitation_Yearly_W.png" alt="Caption for the picture." width="800" height="500">
+
+```{r, eval = FALSE}
+# Plotting mean precipitation by year using global statistics
+
+# Northeast
+plot(x = rownames(ne_precip), y = ne_precip$mean,
+     type = "l", 
+     main = "Mean Precipitation by Year in Northeast",
+     xlab = "Year", 
+     ylab = "Mean (mm)")
+
+# Midwest
+plot(x = rownames(mdw_precip), y = mdw_precip$mean,
+     type = "l",
+     main = "Mean Precipitation by Year in Midwest",
+     xlab = "Year", 
+     ylab = "Mean (mm)")
+
+# South
+plot(x = rownames(s_precip), y = s_precip$mean,
+     type = "l",
+     main = "Mean Precipitation by Year in South",
+     xlab = "Year", 
+     ylab = "Mean (mm)")
+
+# West
+plot(x = rownames(w_precip), y = w_precip$mean,
+     type = "l",
+     main = "Mean Precipitation by Year in West",
+     xlab = "Year", 
+     ylab = "Mean (mm)")
+```
+
+<img src="../images/Precipitation/Line_graphs/Mean_Precipitation_Yearly_Northeast.png" alt="Caption for the picture." width="800" height="500">
+<img src="../images/Precipitation/Line_graphs/Mean_Precipitation_Yearly_Midwest.png" alt="Caption for the picture." width="800" height="500">
+<img src="../images/Precipitation/Line_graphs/Mean_Precipitation_Yearly_South.png" alt="Caption for the picture." width="800" height="500">
+<img src="../images/Precipitation/Line_graphs/Mean_Precipitation_Yearly_West.png" alt="Caption for the picture." width="800" height="500">
+
+Total yearly rainfall peaked at 1,329,374,493 mm in 2020 while the Northeast
+experienced its lowest rainfall in 2022 at 436,261,869 mm. Mean rainfall peaked
+at 1930.7542 mm in 2020 while the lowest mean rainfall experienced took place in 
+2022 with 633.6171 mm. The pattern of rainfall appears to oscillate with
+rainfall means and totals going up and down each year.
+
+The Midwest experienced rainfall totals peaking at 2,816,266,682 mm in 2021 and
+its lowest rainfall total peaking at 1,073,969,616 mm in 2020. Mean rainfall
+peaked at 826.0002 in 2021 and had its lowest measurement at 314.9912 in 2020.
+
+The South experienced rainfall totals peaking at 3,790,676,272 mm in 2021 and 
+experienced their lowest rainfall in 2020 peaking at 1,963,930,408 mm. Mean
+precipitation was highest in 2021 at 1295.1748 mm and lowest in 2020 at 
+671.0236 mm.
+
+The West experienced rainfall totals peaking at 3,796,827,260 mm in 2019 while
+lowest rainfall totals were recorded in 2018 and 2020 with 2,332,063,652 mm and
+2,554,292,321 mm respectively.
+
+
+The following plot shows raster cells that have a precipitation value greater
+than the mean precipitation for each year. The green cells represent cells with
+values above the mean and the grey cells represent cells with values below the
+mean.
+
+```{r, eval = FALSE}
+# Plotting which raster cells have a total precipitation greater than the mean.
+
+# Northeast
+precip_ne_gt_mean <- precip_ne_6year > unlist(global(precip_ne_6year, 
+                                               mean, na.rm = TRUE))
+plot(precip_ne_gt_mean, 
+     axes = FALSE, 
+     mar = c(1, 1, 4, 5))
+
+# Midwest
+precip_mdw_gt_mean <- precip_mdw_6year > unlist(global(precip_mdw_6year,
+                                                       mean, na.rm = TRUE))
+plot(precip_mdw_gt_mean, 
+     axes = FALSE, 
+     mar = c(1, 1, 4, 5))
+
+# South
+precip_s_gt_mean <- precip_s_6year > unlist(global(precip_s_6year,
+                                                   mean, na.rm = TRUE))
+plot(precip_s_gt_mean, 
+     axes = FALSE, 
+     mar = c(1, 1, 4, 6))
+
+# West
+precip_w_gt_mean <- precip_w_6year > unlist(global(precip_w_6year,
+                                                   mean, na.rm = TRUE))
+plot(precip_w_gt_mean, 
+     axes = FALSE, 
+     mar = c(1, 1, 4, 5))
+```
+
+<img src="../images/Precipitation/Raster_images/Area_precip_total_gt_mean_ne.png" alt="Caption for the picture." width="800" height="500">
+<img src="../images/Precipitation/Raster_images/Area_total_precip_gt_mean_mdw.png" alt="Caption for the picture." width="800" height="500">
+<img src="../images/Precipitation/Raster_images/Area_total_precip_gt_mean_s.png" alt="Caption for the picture." width="800" height="500">
+<img src="../images/Precipitation/Raster_images/Area_total_precip_gt_mean_w.png" alt="Caption for the picture." width="800" height="500">
+
+The following four code blocks show the process for creating a raster stack for
+each region with cells that have values less than the mean precipitation set to
+NA. The area of the cells not set to NA (greater than mean) is then calculated
+with the output being a data frame.
+
+```{r, eval = FALSE}
+# Determining the area of raster cells that have a precipitation total
+# greater than the mean precipitation for the Northeast
+
+# Cropping precipitation values to region
+# Setting values lower than the yearly mean precipitation to NA 
+# using clamp function
+precip_2018_ne <- crop(precip_2018, ne_region, mask = TRUE)
+precip_2018_ne <- clamp(precip_2018_ne, lower = 1588.5674, value = FALSE)
+
+precip_2019_ne <- crop(precip_2019, ne_region, mask = TRUE)
+precip_2019_ne <- clamp(precip_2019_ne, lower = 671.6394, value = FALSE)
+
+precip_2020_ne <- crop(precip_2020, ne_region, mask = TRUE)
+precip_2020_ne <- clamp(precip_2020_ne, lower = 1930.7542, value = FALSE)
+
+precip_2021_ne <- crop(precip_2021, ne_region, mask = TRUE)
+precip_2021_ne <- clamp(precip_2021_ne, lower = 1511.6720, value = FALSE)
+
+precip_2022_ne <- crop(precip_2022, ne_region, mask = TRUE)
+precip_2022_ne <- clamp(precip_2022_ne, lower = 633.6171, value = FALSE)
+
+precip_2023_ne <- crop(precip_2023, ne_region, mask = TRUE)
+precip_2023_ne <- clamp(precip_2023_ne, lower = 1768.3361, value = FALSE)
+
+# Creating raster stack
+precip_gt_mean_ne_6year <- rast(list(precip_2018_ne, precip_2019_ne,
+                                     precip_2020_ne, precip_2021_ne,
+                                     precip_2022_ne, precip_2023_ne))
+
+# Creating names for rasters in stack
+names(precip_gt_mean_ne_6year) <- c("2018", "2019", "2020", "2021", "2022",
+                                    "2023")
+
+# Calculating the area and % area of raster cells not set to NA
+area_ne_gt_mean <- expanse(precip_gt_mean_ne_6year, unit = "ha") %>% print
+area_ne <- expanse(precip_ne_6year, unit = "ha") %>% print
+area_ne_gt_mean$area / area_ne$area * 100
+```
+
+<img src="../images/Precipitation/Screenshots/ne_area_calculation.png" alt="Caption for the picture." width="800" height="500">
+
+```{r, eval = FALSE}
+# Determining the area of raster cells that have a precipitation total
+# greater than the mean precipitation for the Midwest
+
+# Cropping precipitation values to region
+# Setting values lower than the yearly mean precipitation to NA 
+# using clamp function
+precip_2018_mdw <- crop(precip_2018, mdw_region, mask = TRUE)
+precip_2018_mdw <- clamp(precip_2018_mdw, lower = 607.7958, value = FALSE)
+
+precip_2019_mdw <- crop(precip_2019, mdw_region, mask = TRUE)
+precip_2019_mdw <- clamp(precip_2019_mdw, lower = 462.4151, value = FALSE)
+
+precip_2020_mdw <- crop(precip_2020, mdw_region, mask = TRUE)
+precip_2020_mdw <- clamp(precip_2020_mdw, lower = 314.9912, value = FALSE)
+
+precip_2021_mdw <- crop(precip_2021, mdw_region, mask = TRUE)
+precip_2021_mdw <- clamp(precip_2021_mdw, lower = 826.0002, value = FALSE)
+
+precip_2022_mdw <- crop(precip_2022, mdw_region, mask = TRUE)
+precip_2022_mdw <- clamp(precip_2022_mdw, lower = 359.2272, value = FALSE)
+
+precip_2023_mdw <- crop(precip_2023, mdw_region, mask = TRUE)
+precip_2023_mdw <- clamp(precip_2023_mdw, lower = 507.5323, value = FALSE)
+
+# Creating raster stack
+precip_gt_mean_mdw_6year <- rast(list(precip_2018_mdw, precip_2019_mdw,
+                                     precip_2020_mdw, precip_2021_mdw,
+                                     precip_2022_mdw, precip_2023_mdw))
+
+# Creating names for rasters in stack
+names(precip_gt_mean_mdw_6year) <- c("2018", "2019", "2020", "2021", "2022",
+                                    "2023")
+
+# Calculating area and % area of raster cells not set to NA
+area_mdw_gt_mean <- expanse(precip_gt_mean_mdw_6year, unit = "ha") %>% print
+area_mdw <- expanse(precip_mdw_6year, unit = "ha") %>% print
+area_mdw_gt_mean$area / area_mdw$area * 100
+```
+
+<img src="../images/Precipitation/Screenshots/mdw_area_calculation.png" alt="Caption for the picture." width="800" height="500">
+
+```{r, eval = FALSE}
+# Determining the area of raster cells that have a precipitation total
+# greater than the mean precipitation for the South
+
+# Cropping precipitation values to region
+# Setting values lower than the yearly mean precipitation to NA 
+# using clamp function
+precip_2018_s <- crop(precip_2018, s_region, mask = TRUE)
+precip_2018_s <- clamp(precip_2018_s, lower = 1229.7252, value = FALSE)
+
+precip_2019_s <- crop(precip_2019, s_region, mask = TRUE)
+precip_2019_s <- clamp(precip_2019_s, lower = 1073.8111, value = FALSE)
+
+precip_2020_s <- crop(precip_2020, s_region, mask = TRUE)
+precip_2020_s <- clamp(precip_2020_s, lower = 671.0236, value = FALSE)
+
+precip_2021_s <- crop(precip_2021, s_region, mask = TRUE)
+precip_2021_s <- clamp(precip_2021_s, lower = 1295.1748, value = FALSE)
+
+precip_2022_s <- crop(precip_2022, s_region, mask = TRUE)
+precip_2022_s <- clamp(precip_2022_s, lower = 881.9466, value = FALSE)
+
+precip_2023_s <- crop(precip_2023, s_region, mask = TRUE)
+precip_2023_s <- clamp(precip_2023_s, lower = 981.7228, value = FALSE)
+
+# Creating raster stack
+precip_gt_mean_s_6year <- rast(list(precip_2018_s, precip_2019_s,
+                                     precip_2020_s, precip_2021_s,
+                                     precip_2022_s, precip_2023_s))
+
+# Creating names for rasters in stack
+names(precip_gt_mean_s_6year) <- c("2018", "2019", "2020", "2021", "2022",
+                                    "2023")
+
+# Calculating area and % area of raster cells not set to NA
+area_s_gt_mean <- expanse(precip_gt_mean_s_6year, unit = "ha") %>% print
+area_s <- expanse(precip_s_6year, unit = "ha") %>% print
+area_s_gt_mean$area / area_s$area * 100
+```
+
+<img src="../images/Precipitation/Screenshots/s_area_calculation.png" alt="Caption for the picture." width="800" height="500">
+
+```{r, eval = FALSE}
+# Determining the area of raster cells that have a precipitation total
+# greater than the mean precipitation for the West
+
+# Cropping precipitation values to region
+# Setting values lower than the yearly mean precipitation to NA 
+# using clamp function
+precip_2018_w <- crop(precip_2018, w_region, mask = TRUE)
+precip_2018_w <- clamp(precip_2018_w, lower = 492.0412, value = FALSE)
+
+precip_2019_w <- crop(precip_2019, w_region, mask = TRUE)
+precip_2019_w <- clamp(precip_2019_w, lower = 801.0911, value = FALSE)
+
+precip_2020_w <- crop(precip_2020, w_region, mask = TRUE)
+precip_2020_w <- clamp(precip_2020_w, lower = 538.9291, value = FALSE)
+
+precip_2021_w <- crop(precip_2021, w_region, mask = TRUE)
+precip_2021_w <- clamp(precip_2021_w, lower = 632.5378, value = FALSE)
+
+precip_2022_w <- crop(precip_2022, w_region, mask = TRUE)
+precip_2022_w <- clamp(precip_2022_w, lower = 638.3273, value = FALSE)
+
+precip_2023_w <- crop(precip_2023, w_region, mask = TRUE)
+precip_2023_w <- clamp(precip_2023_w, lower = 671.1493, value = FALSE)
+
+# Creating raster stack
+precip_gt_mean_w_6year <- rast(list(precip_2018_w, precip_2019_w,
+                                     precip_2020_w, precip_2021_w,
+                                     precip_2022_w, precip_2023_w))
+
+# Creating names for rasters in stack
+names(precip_gt_mean_w_6year) <- c("2018", "2019", "2020", "2021", "2022",
+                                    "2023")
+
+# Calculating area and % area of raster cells not set to NA
+area_w_gt_mean <- expanse(precip_gt_mean_w_6year, unit = "ha") %>% print
+area_w <- expanse(precip_w_6year, unit = "ha") %>% print
+area_w_gt_mean$area / area_w$area * 100
+```
+
+<img src="../images/Precipitation/Screenshots/w_area_calculation.png" alt="Caption for the picture." width="800" height="500">
+
+The area of the Northeast that experienced rainfall totals greater than the mean
+was highest in 2020 and 2021 with 52.4% and 57.1% of the land recording rainfall
+totals greater than the mean respectively. The lowest area recorded was in 2022
+with 38.5% of the land recording rainfall totals above the mean rainfall.
+
+The area of the Midwest that experienced rainfall totals greater than the mean
+was highest in 2022 with 52.4%. The lowest area recorded was in 2021 with 34.8%.
+
+The area of the South that experienced rainfall totals greater than the mean was
+highest in 2023 with 63.6%. 2019 had the lowest area experiencing rainfall
+totals greater than the mean with 38.8%.
+
+The area of the West that experienced rainfall totals greater than the mean was
+highest in 2022 with 29.0%. 2020 had the lowest area experiencing rainfall totals
+greater than the mean with 22.8%.
+
+### Isack Walube Methods
+Objective: Identification of extreme temperature hostspots.
+Using raster data from NASA NEX-DCP30 image collection downloaded from Google Earth Engine, I read in the raster data with climate variables for each year from 2018 to 2023. The maximum temperature variable was then extracted from the original raster tiff file to create a separate raster showing only the average daily maximum temperature by year. The 6 years individual raster climate variables were put in a stack to show the average daily maximum by year.The initial unit for maximum temperature, kelvin (K), was also converted to degree Celsius (C) before stacking.
+
+```{r, eval = FALSE}
+library(terra)
+library(dplyr)
+library(sf)
+```
+
+```{r, eval = FALSE, fig.width=6, fig.height=5}
+climate_rast18 <- rast(here::here("5_year_highRes/2018_hiRes.tif"))
+tmax_2018 <- climate_rast18$tasmax - 273.15
+
+climate_rast19 <- rast(here::here("5_year_highRes/2019_hiRes.tif"))
+tmax_2019 <- climate_rast19$tasmax - 273.15
+
+climate_rast20 <- rast(here::here("5_year_highRes/2020_hiRes.tif"))
+tmax_2020 <- climate_rast20$tasmax - 273.15
+
+climate_rast21 <- rast(here::here("5_year_highRes/2021_hiRes.tif"))
+tmax_2021 <- climate_rast21$tasmax - 273.15
+
+climate_rast22 <- rast(here::here("5_year_highRes/2022_hiRes.tif"))
+tmax_2022 <- climate_rast22$tasmax - 273.15
+
+climate_rast23 <- rast(here::here("5_year_highRes/2023_hiRes.tif"))
+tmax_2023 <- climate_rast23$tasmax - 273.15
+
+maxtemp_6y <- rast(list(tmax_2018, tmax_2019, tmax_2020, tmax_2021,
+                     tmax_2022, tmax_2023))
+names(maxtemp_6y) <- c("2018", "2019", "2020", "2021", "2022", "2023")
+
+plot(maxtemp_6y, axes = FALSE, mar = c(1, 1, 2,3))
+```
+<img src="../isack_images/maxtemp_6y.png" alt="Caption for the picture." width="800" height="500">
+
+A vector shapefile of US states was read into RStudio, where the shapefile was filtered by region and state name to remain with the states within each region and the geometry of the region. The coordinate CRS for the states shapefile was WGS 84. This was done to reduce the objective scope by region as opposed to country level, and obtained detailed results to ultimately identify the distribution of hot spots at state level.
+
+
+
+```{r, eval = FALSE}
+# read in the regions
+us_region <- read_sf("../states/States_shapefile.shp") 
+# filter regions
+northeast <- filter(us_region, Region =="Northeast") %>% select(State_Name)
+south <- filter(us_region, Region =="South") %>% select(State_Name)
+west <- filter(us_region, Region =="West") %>% select(State_Name)
+midwest <- filter(us_region, Region =="Midwest") %>% select(State_Name)
+```
+
+### Isack Walube Results
+The following plot represents the US average daily maximum temperature raster data by region for each year, cropped by region. 
+
+```{r, eval = FALSE, fig.width=6, fig.height=5}
+tmax_ne_6y <- crop(maxtemp_6y, northeast, mask = TRUE)
+plot(tmax_ne_6y, axes = FALSE, mar = c(1, 1, 4, 5))
+
+tmax_mdw_6y <- crop(maxtemp_6y, midwest, mask = TRUE)
+plot(tmax_mdw_6y, axes = FALSE, mar = c(1, 1, 2, 3))
+
+tmax_s_6y <- crop(maxtemp_6y, south, mask = TRUE)
+plot(tmax_s_6y, axes = FALSE, mar = c(1, 1, 2, 3))
+
+tmax_w_6y <- crop(maxtemp_6y, west, mask = TRUE)
+plot(tmax_w_6y, axes = FALSE, mar = c(1, 1, 2, 3))
+```
+Average daily maximum temperature: Northeastern region
+<img src="../isack_images/tmax_ne_6y.png" alt="Caption for the picture." width="800" height="500">
+
+Average daily maximum temperature: Midwest region
+<img src="../isack_images/tmax_mdw_6y.png" alt="Caption for the picture." width="800" height="500">
+
+Average daily maximum temperature: Southern region
+<img src="../isack_images/tmax_s_6y.png" alt="Caption for the picture." width="800" height="500">
+
+Average daily maximum temperature: Western region
+<img src="../isack_images/tmax_w_6y.png" alt="Caption for the picture." width="800" height="500">
+
+The following code block shows plots for values above the 90th percentile of the average daily maximum temperature values by year. The green color shows the areas with values above the 90th percentile of the average daily maximum temperature values.
+
+```{r, eval = FALSE, fig.width=6, fig.height=5}
+# Calculate the 90th percentile, filter the values above the 90th percentile and plot
+#Northeast
+above_90th_northe <- tmax_ne_6y > unlist(global(tmax_ne_6y, 
+                                                probs = 0.9, na.rm = TRUE))
+
+par(mfrow = c(2, 3), mar = c(0, 0, 1, 0))
+lapply(1:6, function(x){
+  plot(above_90th_northe[[x]], axes = F, main = names(above_90th_northe[[x]]))
+  plot(northeast, add = TRUE, col = rgb(0, 0, 0, 0))
+})
+
+#midwest
+above_90th_mdwest <- tmax_mdw_6y > unlist(global(tmax_mdw_6y, 
+                                                  probs = 0.9, na.rm = TRUE))
+
+par(mfrow = c(2, 3), mar = c(0, 0, 1, 0))
+lapply(1:6, function(x){
+  plot(above_90th_mdwest[[x]], axes = F, main = names(above_90th_mdwest[[x]]))
+  plot(midwest, add = TRUE, col = rgb(0, 0, 0, 0))
+})
+
+#south
+above_90th_south <- tmax_s_6y > unlist(global(tmax_s_6y, 
+                                               probs = 0.9, na.rm = TRUE))
+
+par(mfrow = c(2, 3), mar = c(0, 0, 1, 0))
+lapply(1:6, function(x){
+  plot(above_90th_south[[x]], axes = F, main = names(above_90th_south[[x]]))
+  plot(south, add = TRUE, col = rgb(0, 0, 0, 0))
+})
+
+#west
+above_90th_west <- tmax_w_6y > unlist(global(tmax_w_6y, 
+                                               probs = 0.9, na.rm = TRUE))
+
+par(mfrow = c(2, 3), mar = c(0, 0, 1, 0))
+lapply(1:6, function(x){
+  plot(above_90th_west[[x]], axes = F, main = names(above_90th_west[[x]]))
+  plot(west, add = TRUE, col = rgb(0, 0, 0, 0))
+})
+```
+Northeastern region
+<img src="../isack_images/above90_ne.png" alt="Caption for the picture." width="800" height="500">
+
+Midwest region
+<img src="../isack_images/above90_mdw.png" alt="Caption for the picture." width="800" height="500">
+
+Southern region
+<img src="../isack_images/above90_s.png" alt="Caption for the picture." width="800" height="500">
+
+Western region
+<img src="../isack_images/above90_w.png" alt="Caption for the picture." width="800" height="500">
+
+
+After showing the areas with extreme maximum daily temperature, part 2 of the 2-sided objective was to identify average daily extremely low temperature hot spots using the average daily minimum temperature variable.
+
+
+```{r, eval = FALSE, fig.width=6, fig.height=5}
+#read in the raster
+climate_rast18 <- rast(here::here("5_year_highRes/2018_hiRes.tif"))
+tmin_2018 <- climate_rast18$tasmin - 273.15
+
+climate_rast19 <- rast(here::here("5_year_highRes/2019_hiRes.tif"))
+tmin_2019 <- climate_rast19$tasmin - 273.15
+
+climate_rast20 <- rast(here::here("5_year_highRes/2020_hiRes.tif"))
+tmin_2020 <- climate_rast20$tasmin - 273.15
+
+climate_rast21 <- rast(here::here("5_year_highRes/2021_hiRes.tif"))
+tmin_2021 <- climate_rast21$tasmin - 273.15
+
+climate_rast22 <- rast(here::here("5_year_highRes/2022_hiRes.tif"))
+tmin_2022 <- climate_rast22$tasmin - 273.15
+
+climate_rast23 <- rast(here::here("5_year_highRes/2023_hiRes.tif"))
+tmin_2023 <- climate_rast23$tasmin - 273.15
+
+mintemp_6y <- rast(list(tmin_2018, tmin_2019, tmin_2020, tmin_2021,
+                     tmin_2022, tmin_2023))
+names(mintemp_6y) <- c("2018", "2019", "2020", "2021", "2022", "2023")
+
+plot(mintemp_6y, axes = FALSE, mar = c(1, 1, 2, 3))
+```
+
+<img src="../isack_images/mintemp_6y.png" alt="Caption for the picture." width="800" height="500">
+
+
+The raster read in was therefore cropped by region to obtain regional average daily minimum temperature distribution using the code below. 
+
+```{r, eval = FALSE, fig.width=6, fig.height=5}
+tmin_ne_6y <- crop(mintemp_6y, northeast, mask = TRUE)
+plot(tmin_ne_6y, axes = FALSE, mar = c(1, 1, 2,3))
+
+tmin_mdwst_6y <- crop(mintemp_6y, midwest, mask = TRUE)
+plot(tmin_mdwst_6y, axes = FALSE, mar = c(1, 1, 2,3))
+
+tmin_s_6y <- crop(mintemp_6y, south, mask = TRUE)
+plot(tmin_s_6y, axes = FALSE, mar = c(1, 1, 2, 3))
+
+tmin_w_6y <- crop(mintemp_6y, west, mask = TRUE)
+plot(tmin_w_6y, axes = FALSE, mar = c(1, 1, 2,3))
+```
+Average daily minimum temperature: Northeastern region
+<img src="../isack_images/tmin_ne_6y.png" alt="Caption for the picture." width="800" height="500">
+
+Average daily minimum temperature: Midwestern region
+<img src="../isack_images/tmin_mdwst_6y.png" alt="Caption for the picture." width="800" height="500">
+
+Average daily minimum temperature: Southern region
+<img src="../isack_images/tmin_s_6y.png" alt="Caption for the picture." width="800" height="500">
+
+Average daily minimum temperature: Western region
+<img src="../isack_images/tmin_w_6y.png" alt="Caption for the picture." width="800" height="500">
+
+
+The following code block shows plots for values below the 10th percentile of the average daily minimum temperature values by year and region. The areas in green show the values below the 90th percentile of the average daily minimum temperature.
+
+```{r, eval = FALSE, fig.width=6, fig.height=5}
+# Calculate the 90th percentile, filter the values above the 90th percentile and plot
+#northeast
+below_10th_northe <- tmin_ne_6y < unlist(global(tmin_ne_6y, 
+                                               probs = 0.1, na.rm = TRUE))
+par(mfrow = c(2, 3), mar = c(0, 0, 1, 0))
+lapply(1:6, function(x){
+  plot(below_10th_northe[[x]], axes = F, main = names(below_10th_northe[[x]]))
+  plot(northeast, add = TRUE, col = rgb(0, 0, 0, 0))
+})
+
+#midwest
+below_10th_mdwest <- tmin_mdwst_6y < unlist(global(tmin_mdwst_6y, 
+                                               probs = 0.1, na.rm = TRUE))
+par(mfrow = c(2, 3), mar = c(0, 0, 1, 0))
+lapply(1:6, function(x){
+  plot(below_10th_mdwest[[x]], axes = F, main = names(below_10th_mdwest[[x]]))
+  plot(midwest, add = TRUE, col = rgb(0, 0, 0, 0))
+})
+
+
+#south
+below_10th_south <- tmin_s_6y < unlist(global(tmin_s_6y, 
+                                               probs = 0.1, na.rm = TRUE))
+par(mfrow = c(2, 3), mar = c(0, 0, 1, 0))
+lapply(1:6, function(x){
+  plot(below_10th_south[[x]], axes = F, main = names(below_10th_south[[x]]))
+  plot(south, add = TRUE, col = rgb(0, 0, 0, 0))
+})
+
+#west
+below_10th_west <- tmin_w_6y < unlist(global(tmin_w_6y, 
+                                               probs = 0.1, na.rm = TRUE))
+par(mfrow = c(2, 3), mar = c(0, 0, 1, 0))
+lapply(1:6, function(x){
+  plot(below_10th_west[[x]], axes = F, main = names(below_10th_west[[x]]))
+  plot(west, add = TRUE, col = rgb(0, 0, 0, 0))
+})
+```
+Northeastern region
+<img src="../isack_images/below10_ne.png" alt="Caption for the picture." width="800" height="500">
+
+Midwest region
+<img src="../isack_images/below10_mdwest.png" alt="Caption for the picture." width="800" height="500">
+
+Southern region
+<img src="../isack_images/below10_s.png" alt="Caption for the picture." width="800" height="500">
+
+Western region
+<img src="../isack_images/below10_w.png" alt="Caption for the picture." width="800" height="500">
+
+## Discussion
+### Ben Gaskill Discussion
+<style>
+.justify {
+  text-align: justify;
+}
+</style>
+
+<div class="justify">
+The calculation of the Palmer Drought Severity Index should ideally yield a value between 4 and -4, in which positive values denote severe wetness and negative values denote severe dryness (drought). The model I used worked best for 2018-2023 since I had complete data for the time period. The model can also predict past or future values based on the input data, so I decided to generate a future outlook to go along with Noah’s future climate type outputs. 
+
+PDSI 2018-2023<br/>
+The Northeast has the most normal distribution of drought severity index, with an increased risk of drought in the summer months and decreased risk in the winter. However, each subsequent year has a greater risk of drought (lower index value) compared to the previous year in the time series. For the Midwest, the model shows a much more severe drought index for the six-year period, with all values below the origin. The South has similar fluctuations to that of the Northeast but with higher extreme values. The West is an outlier, with a period over a year without any drought conditions, but a severe drought from 2021-2023 was identified by the model.
+
+PDSI 2018-2050<br/>
+The future outlook for the Northeast shows a similar trend as before, but it predicts less intense drought severity, especially from 2030 to late 2044.  The Midwest has an extreme outlier, most likely an error in the model. From 2020-2050, the results are the most uniform. The South has an opposite trend to the Northeast, with more intense drought conditions predictions from 2030 to 2040. The values for the West are the most unexpected, and I believe that the model does not perform well here given the available data.
+
+
+PDSI 2018-2098<br/>
+With only 6 years of training data, I did not expect extremely accurate results up to the year 2098. The results are still interesting to me, however. The Northeast appears relatively stable, with some periods of more severe drought predicted after 2080. The Midwest remains extremely stable, after ignoring the extreme outlier prior to 2020. The model predicted an extreme wet period for the South from 2050 to 2070, falling into an extreme drought in 2080 and recovering by 2090. Finally, The West is predicted to be in drought conditions almost for the entire duration of 2050 to 2098, with the exception of a small rise in wetness from 2070 to 2080 and the early 2090s.
+
+Overall, these models fairly represent what I expect the future outlook to look like. Limitations on data size played a large role in my analysis. The temporal resolution of the NASA NEX-30 dataset extends to 2100. If the process of acquiring and loading imagery was easier and memory issues on my local machine were not an issue, I would want to utilize a range of training data from 2018-2098, and I would expect the PDSI calculations to increase tenfold in accuracy.
+
+### Noah Kantor Discussion
+There are some important trends and dynamics at play that can be identified based on the maps of climate types for different years in the continental US. I chose to run my analysis for the past years 2018-2023 as well as future predictions for 2050 and 2098. In the plots for the past years I was surprised by the amount of variability from year to year, with complex trends that defy easy interpretation. For example, 2018 and 2020 appeared to be relatively drier years with arid climate types extending over larger areas of the western US. Also, the continental/temperate boundaries appeared relatively variable from year to year. An interesting and notable feature is that in the western US small patches of the continental climate type appeared in the midst of predominantly arid areas which I interpreted as corresponding to mountainous areas. The only region of the US that has consistently been categorized as the tropical climate type in the past is southern Florida. The only map that defies this trend is the future prediction for 2098, which predicts that a small area of southern Texas will be classified as a tropical climate. The model also predicts that the tropical climate type will extend into northern Florida by 2098 in addition to the southern part of the state which is currently classified as tropical. Also, it appears that the continental climate type will generally recede northwards in the future, with areas that were previously classified as continental becoming temperate. This trend is especially notable in the western US. Since it is apparent that there is a large amount of variability from year to year, future analyses could produce maps of 10 year averages for the climate types which would reduce the influence of year to year variability and allow for easier discernment of trends over time. In addition, it would be interesting to produce maps of climate conditions at various points in the 20th century to see how much climate conditions have already changed since then. A future analysis could also incorporate the various climate subtypes included in the Koppen classification and not just the five major categories used in this analysis. It would also be interesting to look at particular small regions of the US in higher resolution or to use a more powerful computer to run the analysis for the entire continental US using higher resolution data.
+
+### Jared Boone Discussion
+Looking at the total precipitation for each year in the global statistics, the 
+South and West regions of the US appear have more rainfall than other regions
+most years. However, when you look at the mean precipitation for each year, the 
+Northeast had the highest mean precipitation for 4 out of the 6 years while the 
+West and Midwest had consistently lower mean precipitation values. The higher
+totals in precipitation for the West and South regions can likely be attributed
+to the larger land areas of the regions compared to the Midwest and Northeast.
+However, based on the mean precipitation values, it can be said that the Midwest
+and West receive less rainfall across the regions on average while the Northeast
+and South receive more rainfall across the regions on average.
+
+Looking at the rainfall patterns for the 4 regions, The Northeast appears to
+have the most sporadic change with all parts of the region experiencing rainfall 
+totals greater than the mean for each year over the 6-year period. The Midwest
+experienced little to no change in rainfall patterns. The region had a 
+consistent rainfall pattern with the eastern part of the region experiencing
+rainfall totals greater than the mean precipitation value for each year. The
+South experienced varying rainfall patterns each year with high precipitation
+totals (> mean) being concentrated east of Texas and low precipitation totals
+(< mean) being consistently recorded for Florida and Texas. The West region of
+the United States consistently had high precipitation totals on the West coast.
+This is expected as the Pacific Northwest in the top left part of the region
+contains a temperate rain forest where rainfall is higher on average. Throughout
+the West, rainfall patterns stayed relatively consistent with a few areas
+receiving more rain on average in certain years.
+
+Looking at the area of land that experienced high rainfall, it can be said that
+the West is the driest region in the US due to the region having the lowest area
+of land with precipitation totals exceeding the mean. The Northeast and South 
+have the highest area of land with precipitation values exceeding the mean,
+giving reason to believe that these regions are the wettest in the country.
+However, there does not appear to be a consistent increase or decrease in the 
+area of land experiencing high rainfall in all 4 regions. While the pattern of
+high rainfall varies per year, the area of land experiencing this high rainfall
+stays within similar ranges.
+
+Overall, it can't be said that precipitation patterns are changing in the US
+looking at the 2018-2023 period alone. For future work, it would be beneficial
+to analyze precipitation patterns over a 10 or 20 year period to better assess
+whether precipitation patterns are truly changing.
+
+### Isack Walube Discussion
+One notable observation is the variability in average daily maximum and minimum temperature trends among different regions. For instance, while some regions experienced consistent warming trends over the study period, others exhibited more fluctuating patterns, with periods of both warming and cooling. This variability could be attributed to local factors such as geography, land use, and proximity to oceans or other large bodies of water.
+
+#### Average daily maximum temperature (extremely high temperature) hotspots<br/>
+From the maps, in the Northeastern region, we witness persistent high temperatures filtered as temperature values above the 90th percentile of the average daily maximum temperature in Pennsylvania with 2022 values predominatly covering Pennsylvania and New York. In  Midwest US, the southern states (Kansas, Missouri, and parts of Ohio) proved to be high temperature hotspots throughout the years.
+The southern region exhibits a similar trend throughout the study period with Florida and Louisiana, and southern parts of Georgia, Alabama, and Mississippi showing persistent high temperature. In the West, Coastal states such as California return persistent high temperature hot spots, with large parts of border states; Arizona and New Mexico exhibiting high temperature throughout the 6 years.
+
+#### Average daily minimum temperature (extremely low temperature) hotspots<br/>
+In northeast US, Coastal states (Maine, Massachusetts, Rhode island) together with New Hampshire, Vermont and some parts of New York, all exhibit extremely low temperature throughout the 6 years. In 2018, we see more low temperature values spread southwest-wards towards Pennsylvania state. For mid-west region, the northern states in this region (North Dakota, South Dakota, Minnesota, Wisconsin, and a small part of Iowa) exhibit consistent low temperature hot spots. This could be due to proximity to the ocean and other big water bodies. For instance during the winter months, these states often experience the intrusion of polar air masses from Canada, which bring extremely cold temperatures to these areas.
+In the southern US region, just as explained in the maximum temperature analysis where the southern states exhibited high temperature values, the extreme low temperature maps justify the distribution of low temperature values in this region by clearly showing that only states in the northern part of this region returned low temperature values. The states include; West Virginia, Virginia, North Carolina, Kentucky, Tennessee.  
+The western region shows a consistent large coverage of low temperature values including most of the states in the west of the region (Colorado, Wyoming, Montana, Idaho, Utah, and some parts of Nevada) proving to be persistent throughout the study period.
+
+It's essential to acknowledge the uncertainties and limitations associated with this analysis. Variability in data quality, measurement methods, and model assumptions may introduce uncertainties into the results. Additionally, while the six-year study period provides valuable insights into short-term temperature trends, longer-term analyses are needed to assess the full extent of climate change impacts and trends accurately.
+</div>
+
+
+
+
+
+
