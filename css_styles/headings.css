@@ -1,0 +1,92 @@
+<style>
+            header {
+            font-size: 30px;
+            }
+
+            h1 {color: black;font-size: 35px;font-family: 'Calibri', monospace;
+               text-align: center;
+                }
+            
+            p {color: rgb(19, 18, 18);
+               font-family: 'Calibri';
+               font-size: 25px;
+            }
+
+            a{
+             color: black;
+             font-weight: bold;
+             text-decoration: none;
+            }
+/* Navigation link Start*/
+            nav ul li{
+            list-style: none;
+            display: inline-block;
+            line-height: 2;
+            margin-right: 50px;
+           } 
+
+            nav{
+            justify-content: flex-end;
+            display: flex;
+            }
+            
+           nav ul li a{
+            font-size: 30px;
+            color: rgb(26, 165, 40);
+           } 
+           
+           nav ul li a:hover{
+            color: black;
+           }
+/* Navigation link End*/
+            
+            .headshot{
+                border-radius: 5%
+            }
+/* Intro photo Start */
+            #intro{
+            float: left;
+            margin-left: 100px;
+            margin-top: 100px;
+            margin-right: 100px;
+            /* border: solid; */
+            height: 500px;
+           }
+/* Intro photo End */
+
+/* Intro About me Start */
+           #p_intro{
+            margin-right: 200px;
+            margin-top: 100px;
+            margin-left: 500px;
+            text-align: justify;
+            /* border: solid; */
+           }
+/* Intro About me End */
+
+
+
+           .edu_list{
+            font-size: 25px;
+            font-family: 'Calibri';
+            line-height: 25px;
+            /* border: solid; */
+            margin-left: 200px;
+            margin-right: 200px;
+           }
+
+          
+           #backtoTop{
+            margin-top: 20px;
+            margin-bottom: 40px;
+            border: solid;
+            background-color: rgb(25, 156, 36);
+            border-radius: 10px;
+            font-size: 20px;
+            justify-content: center;
+            display: flex;
+            align-items: justify;
+            height: 60px;
+            width: 150px;
+           }
+        </style>

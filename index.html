@@ -11,7 +11,7 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         
-
+<!-- changes the style of all headings -->
         <style>
             header {
             font-size: 30px;
@@ -55,7 +55,7 @@
 /* Navigation link End*/
             
             .headshot{
-                border-radius: 10%
+                border-radius: 5%
             }
 /* Intro photo Start */
             #intro{
@@ -94,7 +94,7 @@
             margin-top: 20px;
             margin-bottom: 40px;
             border: solid;
-            background-color: rgb(206, 202, 202);
+            background-color: rgb(25, 156, 36);
             border-radius: 10px;
             font-size: 20px;
             justify-content: center;
@@ -105,14 +105,22 @@
            }
         </style>
         <!-- insert external css -->
-        <link rel="stylesheet" href="css_self/present.css">
-        <link rel="stylesheet" href="css_self/project_img.css">
-        <link rel="stylesheet" href="css_self/footer.css">
-        <link rel="stylesheet" href="css_self/google.css">
+        
     </head>
 
    <!--  -->
     <body>
+
+<!-- Navigation -->
+        <div>
+        <nav>
+            <ul>
+                <li><a href="#intro"> INTRODUCTION </a></li>
+                <li><a href="#Edu"> EDUCATION </a></li>
+                <li><a href="#Pro"> PROJECTS </a></li>
+            </ul>
+        </nav>
+    </div>
        <div>
         <nav>
             <ul>
@@ -126,8 +134,8 @@
         
        <div class="intro" id = "intro">
             <img class = 'headshot' src="images\PROF_PIC.jpg" alt="" width="380" height="400">
-            <p style="text-align: center; line-height: 25px;"> <br>
-                </p>
+            <figcaption>Isack Walube</figcaption>
+            
         </div>
 
         <div id="p_intro">
@@ -153,28 +161,39 @@
                                
             </ul>
        </div>
-       <!-- below css from project_img.css -->
+       
        <div id = "Pro">
             <h1 style="margin-left: 200px;margin-right: 200px;">Projects</h1>
             <div class = "pro_image" style = "text-align: center";>
+
+                <!-- adding an image use <figure> -->
                 <figure>
                     <a href="https://walubeisack.weebly.com/portfolio.html">
                         <img src="Images\e_portfolio.png" alt="" style="display: block; margin: 0 auto;"> 
-                        
-                        
+                                
                     </a>
                 </figure> 
 
+                <figure>
+                    <a href="Renewable.html" target = "_blank">
+                    <img src="Images\e_portfolio.png" alt="" style="display: block; margin: 0 auto;"> </a>
+                </figure>
                 
             </div>
        </div>
-    
+  
+       <div>
+        <h1 style=""font-size:50px; color:green> Renewables</h1>
+       </div>
 
-        <script src="js_self/present.js"></script>
 
-    <footer style="background-color: rgb(37, 119, 45); height: 400px;">
+
+
+
+<!-- footer information -->
+    <footer style="background-color: rgb(37, 119, 45); height: 300px;">
         <div style="float: left;" class="footer_personal">  
-            <h2 style="font-weight: bold;font-size: 35px;text-align: center;">CONTACT</h2>
+            <h2 style="font-weight: bold;font-size: 30px;text-align: center;">CONTACT</h2>
             <p><br> Worcester, MA</p>
             <p><a href="mailto:IWalube@clark.edu">IWalube@clarku.edu</a></p>
             <p>&copy; 2024 Isack Walube. All rights reserved.</p>
