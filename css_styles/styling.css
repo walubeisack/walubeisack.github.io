@@ -1,0 +1,29 @@
+header {
+    font-size: 30px;
+    }
+
+    h1 {color: black;font-size: 35px;font-family: 'Calibri', monospace;
+       text-align: center;
+        }
+    
+    p {color: rgb(19, 18, 18);
+       font-family: 'Calibri';
+       font-size: 25px;
+    }
+
+    a{
+     color: black;
+     font-weight: bold;
+     text-decoration: none;
+    }
+
+    a:link{
+        color: blue;
+    }
+    a:visited{
+        color:blue;
+    }
+
+    a:hover{
+        color: red;
+    }
