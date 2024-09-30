@@ -164,26 +164,26 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-    .close-button {
-        font-size: 24px;
-        cursor: pointer;
-        position: absolute;
-        right: 10px;
-        top: 10px;
+.close-button {
+    font-size: 24px;
+    cursor: pointer;
+    position: absolute;
+    right: 10px;
+    top: 10px;
 }
 
-    .myPop{
-        display: None;
-        position: fixed;
-        z-index: 1;
-        left: 0;
-        top: 0;
-        width:100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgb(252, 252, 252);
-        text-align: center;
-        border: solid;
+.myPop{
+    display: None;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width:100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(252, 252, 252);
+    text-align: center;
+    border: solid;
     }
 
     .close{
@@ -196,9 +196,9 @@
     }
 
     .close:hover,.close:focus {
-        color: #bbb;
-        text-decoration: none;
-        cursor: pointer;
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
     }
 
 /* Intro About me Start */
@@ -241,18 +241,6 @@
     background-color: yellow; /* Change to your desired background color */
 }
 
-    .image-container {
-        display: flex;
-        justify-content: center;   
-        align-items: center;      
-        height: 100vh;            
-    }
-
-    .gallery-img {
-        max-width: 100%;           
-        height: auto;              
-    }
-
         </style>
      
         
@@ -279,32 +267,37 @@
     </div>
 
     <button class='change_bk'>Click here to highlight my interests</button>
+    
+    <script>
+        const changebutton = document.querySelector(".change_bk");
+        const past_experience =  document.querySelectorAll("#change_color p a");
+        let back_g = true;
 
-<div id="change_color">
-    <h1>About Me</h1>
-    <p> I am passionate about using <a href="GIS technology">GIS technology</a> to address environmental challenges, 
-        particularly in the context of <a href="https://www.esri.com/en-us/industries/renewables/overview?srsltid=AfmBOoowiaDp2aPRwWvRINpMC-sA0uXJXvqc2rSbHETtrL-TrB_EBDkz">
-        renewable energy</a>. My research aims to explore how GIS can be used to identify optimal locations for renewable energy projects, 
-        ultimately helping us transition to cleaner energy sources and reduce our reliance on fossil fuels, which contribute to climate change.
-    </p>
-</div>
-
-<script>
-    const changebutton = document.querySelector(".change_bk");
-    const past_experience = document.querySelectorAll("#change_color p a");
-    let back_g = true;
-
-    changebutton.onclick = function() {
+    changebutton.onclick = function(){
         past_experience.forEach(link => {
-            if (back_g) {
-                link.classList.add("highlight_e");
-            } else {
-                link.classList.remove("highlight_e");
+            if (back_g){
+            link.classList.add("highlight_e");
+            } else{
+            link.classList.remove("highlight_e");
             }
-        });
-        back_g = !back_g;
-    }
-</script>
+        })
+    back_g = !back_g;
+}
+    </script>
+
+
+    <div id = "change_color">
+        <h1>About Me</h1>
+         
+        <p> I am passionate about using <a href="GIS technology">GIS technology</a>  to address environmental challenges, particularly in the context of
+             <a href="https://www.esri.com/en-us/industries/renewables/overview?srsltid=AfmBOoowiaDp2aPRwWvRINpMC-sA0uXJXvqc2rSbHETtrL-TrB_EBDkz">renewable energy</a>.
+            My research aims to explore how GIS can be used to identify optimal locations for renewable energy projects, ultimately helping us
+            transition to cleaner energy sources, and reduce our reliance on fossil fuels, which contribute to climate change.
+            </p>
+            
+    </div>
+    
+    
 
        <div class = "Edu" id = "Edu">
             <h1 style="margin-left: 200px;margin-right: 200px;">Education</h1>
@@ -318,57 +311,117 @@
             </ul>
        </div>
          
-   
-        <div id="Pro">
+
+       <div id="Pro">
+         
+        <div class="gallery-item">
+            <img src="images/Renewables.jpg" 
+            alt="mr Isack" class="gallery-img">
+            <figcaption style="font-size: 50px;">Sweb development</figcaption>
+        </div>
+        
+        <!-- Pop-up container -->
+        <div class="myPop">
+            <span class="close">&times;</span> <!-- Close button -->
+            <img id="img_pop" style="margin-top: 10rem;">
+            <h1 id="h1_pop"></h1>
+        </div>
+          
+        <script>
+            // Get all gallery images
+            const images = document.getElementsByClassName("gallery-img");
+            // Get the pop-up window
+            const pop_w = document.getElementsByClassName("myPop")[0];
+            // Get the image inside the pop-up
+            const pop_Img = document.getElementById("img_pop");
+            // Get the heading inside the pop-up
+            const pop_h1 = document.getElementById("h1_pop");
+        
+            // Loop through all gallery images to set up click event
+            for (let i = 0; i < images.length; i++) {
+                images[i].onclick = function() {
+                    pop_w.style.display = "block"; // Show the pop-up
+                    pop_Img.src = this.src; // Set the pop-up image source
+                    pop_h1.innerHTML = this.alt; // Set the pop-up heading with the image alt text
+                };
+            }
+        
+            // Create a const variable for the close button
+            const close_button = document.getElementsByClassName("close")[0];
+        
+            // Handle the click event to close the pop-up
+            close_button.onclick = function() {
+                pop_w.style.display = "none"; // Hide the pop-up when the close button is clicked
+            };
+        </script>
+
+
+    </head>
+    <body>
+     <div class="gallery-item">
+    <img src="images/Renewables.jpg" 
+    alt="Projects" class="gallery-img">
+    <figcaption style="font-size: 50px;">Sweb development</figcaption>
+</div>
+
+<!-- Pop-up container -->
+<div class="myPop">
+    <span class="close">&times;</span> <!-- Close button -->
+    <img id="img_pop" style="margin-top: 10rem;">
+    <h1 id="h1_pop"></h1>
+</div>
+  
+<script>
+    // Get all gallery images
+    const images = document.getElementsByClassName("gallery-img");
+    // Get the pop-up window
+    const pop_w = document.getElementsByClassName("myPop")[0];
+    // Get the image inside the pop-up
+    const pop_Img = document.getElementById("img_pop");
+    // Get the heading inside the pop-up
+    const pop_h1 = document.getElementById("h1_pop");
+
+    // Loop through all gallery images to set up click event
+    for (let i = 0; i < images.length; i++) {
+        images[i].onclick = function() {
+            pop_w.style.display = "block"; // Show the pop-up
+            pop_Img.src = this.src; // Set the pop-up image source
+            pop_h1.innerHTML = this.alt; // Set the pop-up heading with the image alt text
+        };
+    }
+
+    // Create a const variable for the close button
+    const close_button = document.getElementsByClassName("close")[0];
+
+    // Handle the click event to close the pop-up
+    close_button.onclick = function() {
+        pop_w.style.display = "none"; // Hide the pop-up when the close button is clicked
+    };
+</script>
+
+
+
            <div class="pro_image" style="text-align: center;">
             <h1 style="text-align: center; margin-left: 200px; margin-right: 200px;">Projects</h1>
                <!-- First project -->
-               <div class="gallery-item">
-                <img src="images/Renewables.jpg" 
-                alt="Project Development " class="gallery-img">
-                <figcaption style="font-size: 40px; text-align: center; margin-left: 800px; 
-                margin-right: 200px">Project Development</figcaption>
-            </div>
-            
-            <!-- Pop-up  -->
-            <div class="myPop">
-                <span class="close">&times;</span> 
-                <img id="img_pop" style="margin-top: 10rem;">
-                <h1 id="h1_pop"></h1>
-            </div>
-              
-            <script>
-                const images = document.getElementsByClassName("gallery-img");
-                const pop_w = document.getElementsByClassName("myPop")[0];
-                const pop_Img = document.getElementById("img_pop");
-                const pop_h1 = document.getElementById("h1_pop");
-            
-                // Loop through all gallery images to set up click event
-                for (let i = 0; i < images.length; i++) {
-                    images[i].onclick = function() {
-                        pop_w.style.display = "block"; 
-                        pop_Img.src = this.src; 
-                        pop_h1.innerHTML = this.alt; 
-                    };
-                }
-            
-                // Create a const variable for the close button
-                const close_button = document.getElementsByClassName("close")[0];
-                close_button.onclick = function() {
-                    pop_w.style.display = "none"; 
-                };
-            </script>
-
-                <!-- Second project -->
                <figure>
                    <a href="https://walubeisack.weebly.com/portfolio.html">
                        <img src="Images/e_portfolio.png" alt="Portfolio Link" style="display: block; margin: 0 auto;">
                    </a>
                </figure>
-           
+       
+               <!-- Second project -->
+               <figure>
+                   <a href="Renewable.html" target="_blank">
+                       <img src="Images/Renewables.jpg" alt="Renewable Energy Project" style="display: block; margin: 0 auto;">
+                   </a>
+               </figure>
+               
            </div>
        </div>
     
+
+
 
 <!-- footer information -->
     <footer style="background-color: rgb(37, 119, 45); height: 300px;">
@@ -388,7 +441,7 @@
     <script>
         // get the button
         const backButton = document.getElementById('backtoTop')
-    
+        // show the button when scrolled down 20px from the top
         window.onscroll = function(){
             if(document.body.scrollTop >20 || document.documentElement.scrollTop >20){
                 backButton.style.display = 'block';

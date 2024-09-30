@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+        <style>
+            .myPop {
+                display: none; /* Initially hide the pop-up */
+                position: fixed;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+                text-align: center;
+                padding-top: 60px;
+            }
+        
+            .myPop img {
+                max-width: 80%;
+                max-height: 80%;
+            }
+        
+            .close {
+                position: absolute;
+                top: 5rem;
+                right: 10rem;
+                color: #0d27d0;
+                font-size: 5rem;
+                font-weight: bold;
+                cursor: pointer;
+            }
+        
+            .close:hover, .close:focus {
+                color: #bbb;
+            }
+        </style>
+        
+
+
+    </head>
+    <body>
+     <div class="gallery-item">
+    <img src="images/Renewables.jpg" 
+    alt="Projects" class="gallery-img">
+    <figcaption style="font-size: 50px;">Sweb development</figcaption>
+</div>
+
+<!-- Pop-up container -->
+<div class="myPop">
+    <span class="close">&times;</span> <!-- Close button -->
+    <img id="img_pop" style="margin-top: 10rem;">
+    <h1 id="h1_pop"></h1>
+</div>
+  
+<script>
+    // Get all gallery images
+    const images = document.getElementsByClassName("gallery-img");
+    // Get the pop-up window
+    const pop_w = document.getElementsByClassName("myPop")[0];
+    // Get the image inside the pop-up
+    const pop_Img = document.getElementById("img_pop");
+    // Get the heading inside the pop-up
+    const pop_h1 = document.getElementById("h1_pop");
+
+    // Loop through all gallery images to set up click event
+    for (let i = 0; i < images.length; i++) {
+        images[i].onclick = function() {
+            pop_w.style.display = "block"; // Show the pop-up
+            pop_Img.src = this.src; // Set the pop-up image source
+            pop_h1.innerHTML = this.alt; // Set the pop-up heading with the image alt text
+        };
+    }
+
+    // Create a const variable for the close button
+    const close_button = document.getElementsByClassName("close")[0];
+
+    // Handle the click event to close the pop-up
+    close_button.onclick = function() {
+        pop_w.style.display = "none"; // Hide the pop-up when the close button is clicked
+    };
+</script>
+
+    </body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Isack Walube</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+
+        <style>
+            h1 {
+        
+        
+            .nav_bar_header1, .nav_bar_header2 {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                opacity: 1; /* Initially hidden */
+                transition: opacity 1s ease-in-out; /* Smooth fade */
+            }
+            .show {
+    opacity: 1; /* Make visible when the .show class is added */
+}
+        </style>
+
+    </head>
+
+
+
+
+
+    <button class='change_bk'>Click here to highlight my past experience</button>
+
+    <div class = "change_color">
+        <h1>This is Intro</h1>
+        <p> Hi Welcome to my <a href="">personal website</a>,
+            this is my <a href="">projects web</a></p>
+    </div>
+
+    <!-- DYNAMIC TEXT -->
+    <body>
+        <div class="nav_bar_header1">Header 1</div>
+        <div class="nav_bar_header2">Header 2</div>
+
+        <style>
+        
+        
+        .nav_bar_header1, .nav_bar_header2 {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            opacity: 0; /* Initially hidden */
+            transition: opacity 1s ease-in-out; /* Smooth fade */
+        }
+        </style>
+    
+    <!-- add a button -->
+    <button onclick = "document.getElementById('Millipa').textContent='Hey Millipa'";>Get your lucky words</button>
+    <p id = "Millipa"></p>
+
+    <button onclick= "this.textContent = Date()" style="height: 100px;font-size: large;">The current date and time</button>
+
+    </body>
+
+
+    <div> <button id ="backtoTop">Back To Top</button>
+    </div>
+
+    <script>
+        const backButton = document.getElementById('backtoTop');
+backButton.onclick = function(){
+    window.scrollTo({
+        top: 0,
+        behavior:'smooth'
+    })
+};
+    </script>
+        <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+        
+        <script src="" async defer></script>
+    
+
+    <footer></footer>
+        <p><small>&copy;Copyright &copy;
+            <script>document.write(new Date().getMonth() + 1 + '/' + new Date().getFullYear());</script>
+            Isack Walube <br> All rights reserved</small>
+        </p> 
+            
+    </footer>
+</html>

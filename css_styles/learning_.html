@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+    </head>
+
+    <style>
+         h1{
+            font-size: 150px;
+        }
+        .nav_bar_header1, .nav_bar_header2 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    opacity: 0; /* Initially hidden */
+    transition: opacity 1s ease-in-out; /* Smooth fade */
+    }
+    
+    .show {
+    opacity: 1; /* Make visible when the .show class is added */
+    } 
+        .myPop{
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width:100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(252, 252, 252);
+        text-align: center;
+        border: solid;
+        }
+
+        .close{
+        position: absolute;
+        top: 5rem;
+        right: 10rem;
+        color: #0d27d0;
+        font-size: 10rem;
+        font-weight: bold;
+    }
+
+    .close:hover,.close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+    }
+        </style>
+    <body>
+
+        <div class="nav_bar_header1">Isack Walube</div>
+        <div class="nav_bar_header2">GIS Lab manager</div>
+
+        <script>
+        window.onload = function() {
+            // Get headers
+            const header1 = document.querySelector(".nav_bar_header1");
+            const header2 = document.querySelector(".nav_bar_header2");
+        
+            let isHeader1Visible = true; // Start with header1 visible
+        
+            // Function to toggle between headers
+            function toggleHeaders() {
+                if (isHeader1Visible) {
+                    // Show header1, hide header2
+                    header1.classList.add("show");
+                    header2.classList.remove("show");
+                } else {
+                    // Show header2, hide header1
+                    header2.classList.add("show");
+                    header1.classList.remove("show");
+                }
+        
+                // Switch to the other header for the next cycle
+                isHeader1Visible = !isHeader1Visible;
+        
+                // Repeat the toggle every 4 seconds
+                setTimeout(toggleHeaders, 4000);
+            }
+        
+            // Start the toggle cycle
+            toggleHeaders();
+        };
+        </script>
+        
+
+
+    <div class="gallery-item">
+        <img src="images/Renewables.jpg" 
+        alt="Photovoltaic" class="gallery-img">
+        <figcaption style="font-size: 50px;">Web development</figcaption>
+    </div>
+
+    <div  class="myPop">
+        <span class="close">&times;</span>
+        <img id="img_pop" style="margin-top: 10rem;">
+        <h1 id = "h1_pop"></h1>
+    </div>
+    <script>
+    // Get the image and insert it inside the modal
+    const images = document.getElementsByClassName("gallery-img");
+    //const captionText = document.getElementById("caption");
+        
+        const pop_w = document.getElementsByClassName("myPop")[0];
+        const pop_Img = document.getElementById("img_pop");
+        const pop_h1 = document.getElementById("h1_pop")
+
+        // Loop through all gallery images
+        for (let i = 0; i < images.length; i++) {
+            images[i].onclick = function() {
+                pop_w.style.display = "block";
+                pop_Img.src = this.src;
+                pop_h1.innerHTML = this.alt
+            }
+        }
+    </script>  
+
+    <script>
+    // Get the image and insert it inside the modal
+    const images = document.getElementsByClassName("gallery-img");
+        
+    const pop_w = document.getElementsByClassName("myPop")[0];
+    const pop_Img = document.getElementById("img_pop");
+    const pop_h1 = document.getElementById("h1_pop");
+
+    // Get the close button
+    const closeBtn = document.getElementsByClassName("close")[0];
+
+    // Loop through all gallery images
+    for (let i = 0; i < images.length; i++) {
+        images[i].onclick = function() {
+            pop_w.style.display = "block";
+            pop_Img.src = this.src;
+            pop_h1.innerHTML = this.alt;
+        }
+    }
+
+    // When the user clicks on the close button, hide the pop-up
+    closeBtn.onclick = function() {
+        pop_w.style.display = "none";
+    }
+
+    // Also close the pop-up when the user clicks outside the pop-up
+    window.onclick = function(event) {
+        if (event.target == pop_w) {
+            pop_w.style.display = "none";
+        }
+    }
+</script>
+
+<div class="gallery-item">
+    <img src="Images/presentation/aag_denver.jpg" 
+    alt="Association of American Geographers Conference" class="gallery-img">
+    <figcaption style="font-size: 50px;">AAG Conference</figcaption>
+</div>
+
+<div class="myPop">
+    <span class="close">&times;</span>
+    <img id="img_pop" style="margin-top: 10rem;">
+    <h1 id="h1_pop"></h1>
+</div>
+
+<style>
+    .myPop {
+        display: none; /* Hide the pop-up initially */
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+        text-align: center;
+        padding-top: 60px;
+    }
+
+    .myPop img {
+        max-width: 80%;
+        max-height: 80%;
+    }
+
+    .close {
+        position: absolute;
+        top: 5rem;
+        right: 10rem;
+        color: #0d27d0;
+        font-size: 5rem;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .close:hover, .close:focus {
+        color: #bbb;
+    }
+</style>
+
+<script>
+    // Get all gallery images
+    const images = document.getElementsByClassName("gallery-img");
+    // Get the pop-up window
+    const pop_w = document.getElementsByClassName("myPop")[0];
+    // Get the image inside the pop-up
+    const pop_Img = document.getElementById("img_pop");
+    // Get the heading inside the pop-up
+    const pop_h1 = document.getElementById("h1_pop");
+
+    // Loop through all gallery images
+    for (let i = 0; i < images.length; i++) {
+        images[i].onclick = function() {
+            pop_w.style.display = "block"; // Show the pop-up
+            pop_Img.src = this.src; // Set the pop-up image source
+            pop_h1.innerHTML = this.alt; // Set the pop-up heading
+        };
+    }
+
+    // Close button functionality
+    const close_button = document.getElementsByClassName("close")[0];
+    close_button.onclick = function() {
+        pop_w.style.display = "none"; // Hide the pop-up when the close button is clicked
+    };
+
+    // Optional: Close the modal if the user clicks outside the image
+    window.onclick = function(event) {
+        if (event.target === pop_w) {
+            pop_w.style.display = "none";
+        }
+    };
+</script>
+<script>
+close_button.onclick = function() {
+    console.log("Close button clicked");
+    pop_w.style.display = "none"; // Hide the pop-up when the close button is clicked
+};
+</script>
+
+
+
+<!-- <div class="gallery-item">
+    <img src="Renewables.jpg" 
+    alt="Photovoltaic" class="gallery-img">
+    <figcaption style="font-size: 50px;">Web development</figcaption>
+</div>
+
+<div class="myPop">
+    <span class="close">&times;</span>
+    <img id="img_pop" style="margin-top: 10rem;">
+    <h1 id="h1_pop"></h1>
+</div>
+
+<-- Add some CSS for better visibility -->
+<!--<style>
+    /* Styling for the pop-up */
+    .myPop {
+        display: none; /* Initially hidden */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .myPop img {
+        max-width: 80%;
+        max-height: 80%;
+    }
+
+    .close {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        color: white;
+        font-size: 40px;
+        cursor: pointer;
+    }
+
+    .gallery-item {
+        margin: 20px;
+    }
+</style>
+
+<script>
+    // Get the image and insert it inside the modal
+    const images = document.getElementsByClassName("gallery-img");
+    const pop_w = document.getElementsByClassName("myPop")[0];
+    const pop_Img = document.getElementById("img_pop");
+    const pop_h1 = document.getElementById("h1_pop");
+
+    // Loop through all gallery images
+    for (let i = 0; i < images.length; i++) {
+        images[i].onclick = function() {
+            pop_w.style.display = "flex"; // Show the pop-up (flex to center the content)
+            pop_Img.src = this.src; // Set the pop-up image source
+            pop_h1.innerHTML = this.alt; // Set the pop-up heading
+        };
+    }
+
+    // Close button functionality
+    const close_button = document.getElementsByClassName("close")[0];
+    close_button.onclick = function() {
+        pop_w.style.display = "none"; // Hide the pop-up when the close button is clicked
+    };
+
+    // Optional: Close the modal if the user clicks outside the image
+    window.onclick = function(event) {
+        if (event.target === pop_w) {
+            pop_w.style.display = "none";
+        }
+    };
+</script>
+<style>
+    /* Styling for the pop-up */
+    .myPop {
+        display: none; /* Hide the pop-up initially */
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.8); /* Dark overlay with some transparency */
+        text-align: center;
+        padding-top: 60px;
+    }
+
+    .myPop img {
+        margin-top: 10rem;
+        max-width: 80%;
+        max-height: 80%;
+    }
+
+    /* Styling for the close button */
+    .close {
+        position: absolute;
+        top: 5rem;
+        right: 10rem;
+        color: #0d27d0;
+        font-size: 5rem;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: #bbb;
+        text-decoration: none;
+    }
+
+    .gallery-item {
+        margin: 20px;
+        text-align: center;
+    }
+</style>
+
+<script>
+    // Get the image and insert it inside the modal
+    const images = document.getElementsByClassName("gallery-img");
+    const pop_w = document.getElementsByClassName("myPop")[0];
+    const pop_Img = document.getElementById("img_pop");
+    const pop_h1 = document.getElementById("h1_pop");
+
+    // Loop through all gallery images
+    for (let i = 0; i < images.length; i++) {
+        images[i].onclick = function() {
+            console.log("Image clicked"); // Check if the image click is registered
+            pop_w.style.display = "block"; // Show the pop-up
+            pop_Img.src = this.src; // Set the pop-up image source
+            pop_h1.innerHTML = this.alt; // Set the pop-up heading with the image alt text
+        };
+    }
+
+    // Close button functionality
+    const close_button = document.getElementsByClassName("close")[0];
+    console.log(close_button); // Debug to check if the close button is correctly selected
+
+    close_button.onclick = function() {
+        console.log("Close button clicked"); // Check if the close button click is registered
+        pop_w.style.display = "none"; // Hide the pop-up when the close button is clicked
+    };
+
+    // Optional: Close the modal if the user clicks outside the image
+    window.onclick = function(event) {
+        if (event.target === pop_w) {
+            console.log("Clicked outside the pop-up");
+            pop_w.style.display = "none";
+        }
+    };
+</script>
+
+</script> --*>
+
+
+
+    </body>
+</html>
