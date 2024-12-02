@@ -1,410 +1,257 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]>      <html class="no-js">  <![endif]-->
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>ISACK WALUBE</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-        
-<!-- changes the style of all headings -->
-        <style>
-            header {
-            font-size: 30px;
-            }
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Isack Walube - GIS Enthusiast</title>
+    <meta name="description" content="Isack Walube's portfolio showcasing GIS expertise, projects, and academic journey.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-            h1 {color: black;font-size: 35px;font-family: 'Calibri', monospace;
-               text-align: center;
-                }
-            
-         .intro figcaption {
-        color: rgb(30, 9, 151);
-        font-family: 'Calibri';
-        font-size: 25px;
+    <!-- Internal Styles -->
+    <style>
+        body {
+            font-family: 'Calibri', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
         }
 
-
-            p {color: rgb(19, 18, 18);
-               font-family: 'Calibri';
-               font-size: 25px;
-            }
-
-            a{
-             color: black;
-             font-weight: bold;
-             text-decoration: none;
-            }
-
-            a:link{
-                color: black;
-            }
-            a:visited{
-                color:black;
-            }
-
-            a:hover{
-                color: red;
-            }
-            .myPop {
-                display: none; /* Initially hide the pop-up */
-                position: fixed;
-                z-index: 1;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                overflow: auto;
-                background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
-                text-align: center;
-                padding-top: 60px;
-            }
-        
-            .myPop img {
-                max-width: 80%;
-                max-height: 80%;
-            }
-        
-            .close {
-                position: absolute;
-                top: 5rem;
-                right: 10rem;
-                color: #0d27d0;
-                font-size: 5rem;
-                font-weight: bold;
-                cursor: pointer;
-            }
-        
-            .close:hover, .close:focus {
-                color: #bbb;
-            } 
-
-/* Navigation link Start*/
-            nav ul li{
-            list-style: none;
-            display: inline-block;
-            line-height: 2;
-            margin-right: 50px;
-           } 
-
-            nav{
-            justify-content: flex-end;
-            display: flex;
-            }
-            
-           nav ul li a{
-            font-size: 30px;
-            color:blue;
-           } 
-           
-           nav ul li a:hover{
-            color: red;
-           }
-/* Navigation link End*/
-            
-            .headshot{
-                border-radius: 5%
-            }
-/* Intro photo Start */
-            #intro{
-            float: left;
-            margin-left: 100px;
-            margin-top: 100px;
-            margin-right: 100px;
-            /* border: solid; */
-            height: 500px;
-           }
-/* Intro photo End */
-
-/* button */
-
-.change_bk {
-            background-color: #4CAF50; 
+        header {
+            text-align: center;
+            padding: 20px;
+            background: #247ba0;
             color: white;
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
         }
 
-        .change_bk:hover {
-            background-color: #45a049; 
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
         }
 
-        .change_bk:active {
-            background-color: #36732d; 
-        }
-
-          
-           #change_color{
-            margin-right: 200px;
-            margin-top: 10px;
-            margin-left: 600px;
-            text-align: justify;
-           }
-
-
-           .popup-window {
-    display:none; /* Initially visible */
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 300px;
-    padding: 20px;
-    background-color: white;
-    border: 2px solid #000;
-    z-index: 1000;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-    .close-button {
-        font-size: 24px;
-        cursor: pointer;
-        position: absolute;
-        right: 10px;
-        top: 10px;
-}
-
-    .myPop{
-        display: None;
-        position: fixed;
-        z-index: 1;
-        left: 0;
-        top: 0;
-        width:100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgb(252, 252, 252);
-        text-align: center;
-        border: solid;
-    }
-
-    .close{
-        position: absolute;
-        top: 5rem;
-        right: 10rem;
-        color: #0d27d0;
-        font-size: 10rem;
-        font-weight: bold;
-    }
-
-    .close:hover,.close:focus {
-        color: #bbb;
-        text-decoration: none;
-        cursor: pointer;
-    }
-
-/* Intro About me Start */
-           #p_intro{
-            margin-right: 200px;
-            margin-top: 100px;
-            margin-left: 500px;
-            text-align: justify;
-            /* border: solid; */
-           }
-/* Intro About me End */
-
-           .edu_list{
-            font-size: 25px;
-            font-family: 'Calibri';
-            line-height: 25px;
-            /* border: solid; */
-            margin-left: 200px;
-            margin-right: 200px;
-           }
-          /* .pro_image{
-            float: inline-end;
-           }*/
-          
-
-           #backtoTop{
-            margin-top: 20px;
-            margin-bottom: 40px;
-            border: solid;
-            background-color: rgb(25, 156, 36);
-            border-radius: 10px;
-            font-size: 20px;
-            justify-content: center;
+        nav {
+            background: #f4f4f4;
             display: flex;
-            align-items: justify;
-            height: 60px;
-            width: 150px;
-           }
-           .highlight_e {
-    background-color: yellow; /* Change to your desired background color */
-}
+            justify-content: center;
+            padding: 10px 0;
+            font-weight: bold;
+        }
 
-    .image-container {
-        display: flex;
-        justify-content: center;   
-        align-items: center;      
-        height: 100vh;            
-    }
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
 
-    .gallery-img {
-        max-width: 100%;           
-        height: auto;              
-    }
+        nav ul li {
+            margin: 0 20px;
+        }
 
-        </style>
-     
-        
-    </head>
+        nav ul li a {
+            text-decoration: none;
+            color: #247ba0;
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
 
-   <!--  -->
-    <body>
+        nav ul li a:hover {
+            color: red;
+        }
+
+        section {
+            padding: 20px;
+            margin: 20px;
+            text-align: center;
+        }
+
+        section h1 {
+            text-align: center;
+            font-size: 2rem;
+            color: #247ba0;
+            font-weight: bold;
+        }
+
+        .intro, .education, .projects {
+            margin: auto;
+            max-width: 900px;
+            font-weight: bold;
+        }
+
+        .intro img {
+            display: block;
+            margin: 20px auto;
+            border-radius: 10px;
+        }
+
+        .intro figcaption {
+            text-align: center;
+            font-size: 1.2rem;
+            font-style: italic;
+            color: #555;
+        }
+
+        .projects .gallery-item {
+            max-width: 600px; 
+            margin: 20px auto; 
+            text-align: center; 
+            border-radius: 10px;
+        }
+
+        .projects img {
+            display: inline-block;
+            margin: 0 auto;
+            border-radius: 10px;
+        }
+
+        .projects figcaption {
+            margin-top: 10px;
+            font-size: 1.2rem;
+        }
+
+        .button {
+            display: block;
+            margin: 20px auto;
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .button:hover {
+            background: #45a049;
+        }
+
+        footer {
+            background: #247ba0;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+        }
+
+        footer p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <style>
+        body {
+          background-color: #d3d3d3;
+        }
+      </style>
+<header>
+    <h1>Isack Walube</h1>
+    <p>GIS Enthusiast | Renewable Energy Advocate</p>
+</header>
 
 <!-- Navigation -->
-        <div>
-        <nav>
-            <ul>
-                <li> <a href="#intro">INTRODUCTION</a></li>
-                <li> <a href="#Edu">EDUCATION</a></li>
-                <li><a href="#Pro">PROJECTS</a></li>
-                
-            </ul>
-        </nav>
-       </div>
-    <div class="intro" id = "intro">
-        <img class = 'headshot' src="images\PROF_PIC.jpg" alt="" width="380" height="400">
+<nav>
+    <ul>
+        <li><a href="#intro">Introduction</a></li>
+        <li><a href="#education">Education</a></li>
+        <li><a href="#projects">Projects</a></li>
+    </ul>
+</nav>
+
+<!-- Introduction Section -->
+<section id="intro">
+    <figure class="intro">
+        <img src="images/PROF_PIC.jpg" alt="Isack Walube" width="300">
         <figcaption>Isack Walube</figcaption>
-        
-    </div>
+    </figure>
+    <p style="text-align: left;">I am passionate about leveraging GIS technology to address pressing environmental challenges, with a particular focus on advancing renewable energy solutions. 
+        My research centers on applying GIS to identify optimal locations for renewable energy projects, 
+        such as solar farms and wind turbines, by integrating spatial data, environmental factors, and socio-economic considerations. 
+        By analyzing land use patterns, resource availability, and environmental sensitivities, 
+        I aim to develop data-driven approaches that minimize ecological impacts while maximizing energy efficiency. 
 
-    <button class='change_bk'>Click here to highlight my interests</button>
+        Through this work, I seek to empower decision-makers with actionable insights that facilitate the transition to cleaner energy systems. 
+        I believe GIS has the potential to bridge the gap between science and policy, enabling more informed decisions that align with global sustainability goals. 
+        By contributing to renewable energy initiatives, I aim to combat climate change, promote resource stewardship, and support the development of resilient communities, fostering a sustainable future for generations to come.</p>
+</section>
 
-<div id="change_color">
-    <h1>About Me</h1>
-    <p> I am passionate about using <a href="GIS technology">GIS technology</a> to address environmental challenges, 
-        particularly in the context of <a href="https://www.esri.com/en-us/industries/renewables/overview?srsltid=AfmBOoowiaDp2aPRwWvRINpMC-sA0uXJXvqc2rSbHETtrL-TrB_EBDkz">
-        renewable energy</a>. My research aims to explore how GIS can be used to identify optimal locations for renewable energy projects, 
-        ultimately helping us transition to cleaner energy sources and reduce our reliance on fossil fuels, which contribute to climate change.
-    </p>
-</div>
-
-<script>
-    const changebutton = document.querySelector(".change_bk");
-    const past_experience = document.querySelectorAll("#change_color p a");
-    let back_g = true;
-
-    changebutton.onclick = function() {
-        past_experience.forEach(link => {
-            if (back_g) {
-                link.classList.add("highlight_e");
-            } else {
-                link.classList.remove("highlight_e");
-            }
-        });
-        back_g = !back_g;
-    }
-</script>
-
-       <div class = "Edu" id = "Edu">
-            <h1 style="margin-left: 200px;margin-right: 200px;">Education</h1>
-            <ul class = "edu_list">
-                <li>Master of Geographic Information Sciences candidate May 2025</li>
-                Clark University</li>
-                
-                <li>Bachelor of Science in Land Economics - May 2021</li>
-                Makerere University, Uganda</li>
-                               
-            </ul>
-       </div>
-         
+<!-- Education Section -->
+<section id="education">
+    <h1>Education</h1>
    
-        <div id="Pro">
-           <div class="pro_image" style="text-align: center;">
-            <h1 style="text-align: center; margin-left: 200px; margin-right: 200px;">Projects</h1>
-               <!-- First project -->
-               <div class="gallery-item">
-                <img src="images/Renewables.jpg" 
-                alt="Solar and wind energy " class="gallery-img">
-                <figcaption style="font-size: 40px; text-align: center; margin-left: 300px; 
-                margin-right: 200px">Project Development</figcaption>
-            </div>
-            
-            <!-- Pop-up  -->
-            <div class="myPop">
-                <span class="close">&times;</span> 
-                <img id="img_pop" style="margin-top: 10rem;">
-                <h1 id="h1_pop"></h1>
-            </div>
-              
-            <script>
-                const images = document.getElementsByClassName("gallery-img");
-                const pop_w = document.getElementsByClassName("myPop")[0];
-                const pop_Img = document.getElementById("img_pop");
-                const pop_h1 = document.getElementById("h1_pop");
-            
-                // Loop through all gallery images to set up click event
-                for (let i = 0; i < images.length; i++) {
-                    images[i].onclick = function() {
-                        pop_w.style.display = "block"; 
-                        pop_Img.src = this.src; 
-                        pop_h1.innerHTML = this.alt; 
-                    };
-                }
-            
-                // Create a const variable for the close button
-                const close_button = document.getElementsByClassName("close")[0];
-                close_button.onclick = function() {
-                    pop_w.style.display = "none"; 
-                };
-            </script>
-
-                <!-- Second project -->
-               <figure>
-                   <a href="https://walubeisack.weebly.com/portfolio.html">
-                       <img src="images/e_portfolio.png" alt="Portfolio Link" style="display: block; margin: 0 auto;">
-                   </a>
-               </figure>
-           
-           </div>
-       </div>
+    <ul style="list-style-type: square; text-align: center; padding-left: 0;">
+        <li style="display: inline-block; text-align: left;">
+            <strong>Master of Geographic Information Sciences</strong> - Clark University (Expected May 2025)
+        </li>
+        <br>
+        <li style="display: inline-block; text-align: left;">
+            <strong>Bachelor of Science in Land Economics</strong> - Makerere University, Uganda (Graduated May 2021)
+        </li>
+    </ul>
     
+</section>
 
-<!-- footer information -->
-    <footer style="background-color: rgb(37, 119, 45); height: 300px;">
-        <div style="float: left;" class="footer_personal">  
-            <h2 style="font-weight: bold;font-size: 30px;">CONTACT</h2>
-            <p><br> Worcester, MA</p>
-            <p><a href="mailto:IWalube@clark.edu">IWalube@clarku.edu</a></p>
-            <p>&copy; 2024 Isack Walube. All rights reserved.</p>
-        </div>   
-    </footer>
-     
-    <div>
-        <button id ="backtoTop">Back To Top</button>
+<!-- Projects Section -->
+<section id="projects">
+    <h1>Projects</h1>
+    
+    <!-- Project 1 -->
+    <div class="gallery-item">
+        <figcaption style = 
+        "font-weight: bold;
+        text-decoration: underline;">1. Renewable Energy GIS Analysis</figcaption>
+        <img src="images/solar_irrigation.jpg" alt="Renewable Energy GIS Analysis";>
+        
+        <p>This project utilized GIS tools to identify potential sites for solar-powered irrigation projects. 
+            I conducted site suitability assessments, analyzing factors like terrain, water sources, and accessibility. 
+            I compiled detailed feasibility reports on each site, evaluating their potential for successful implementation. 
+            Community outreach was also a key part of the project, ensuring local stakeholders were informed and engaged. 
+            The goal was to identify sustainable, viable locations for irrigation solutions using renewable energy.
+           </p>
+            <a href="https://www.nexusgreen.com/services/solar-powered-irrigation-system/" class="button">Visit Project</a>
+        </div>
+
+    <!-- Project 2 -->
+    <div class="gallery-item">
+        <figcaption style = "font-weight: bold;
+        text-decoration: underline;" >2. GIS and Food Insecurity Mapping</figcaption>
+        <img src="images/Tigray_fs.jpg" alt="Solar panel and water pump in agriculture" width="401" height="244">
+
+        
+        <p>Collaborated on a project that uses GIS and database management to analyze food insecurity patterns in Tigray region in northern Ethiopia. 
+            This work aimed to identify regions most affected and suggest policy interventions 
+            to improve food distribution systems.</p>
+            <a href="https://www.canva.com/design/DAGDDT6t8d8/Y1LrMll6E75fHKrsLMncqg/view?utm_content
+            =DAGDDT6t8d8&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hdcb5edb131" class="button">Visit Project</a>
+    </div>
+
+    <!-- E-Portfolio -->
+    <div class="gallery-item">
+        <figcaption style = "font-weight: bold; 
+        text-decoration: underline;">3. Solar Panels in Providence</figcaption>
+        <img src="images/solar_providence.jpg" alt="Solar Panels in Providence">
+        
+        <p>Below is the interactive map showing the distribution of solar panels in Providence, Rhode Island</p>
+        <!-- Link to the map-->
+        <a href="https://walubeisack.github.io/Lab_09_popup_in_map/"</a>
+        <!-- solar panel map -->
+        <iframe 
+            src="https://walubeisack.github.io/Lab_09_popup_in_map/" 
+            width="100%" 
+            height="500" 
+            style="border: none; margin-top: 20px;">
+        </iframe>
     </div>
     
-    
-    <script>
-        // get the button
-        const backButton = document.getElementById('backtoTop')
-    
-        window.onscroll = function(){
-            if(document.body.scrollTop >20 || document.documentElement.scrollTop >20){
-                backButton.style.display = 'block';
-            }else{
-                backButton.style.display = None
-            }
-        };
-        // click button
-        backButton.onclick = function(){
-            window.scrollTo({
-                top: 0,
-                behavior:'smooth'
-            })
-        }
-   </script>
 
+</section>
 
-    </body>
+<!-- Footer -->
+<footer>
+    <p>Worcester, MA | <a href="mailto:IWalube@clarku.edu" style="color: white;">IWalube@clarku.edu</a></p>
+    <p>&copy; 2024 Isack Walube. All rights reserved.</p>
+</footer>
+
+</body>
 </html>
